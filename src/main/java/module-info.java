@@ -1,4 +1,25 @@
-// Gerekli izinleri verdiğimiz yer
+/*Default*/
+module com.hamitmizrak.ibb_ecodation_javafx {
+    requires javafx.controls;
+    requires javafx.fxml;
+    //requires javafx.web;
+
+    requires org.controlsfx.controls;
+    requires com.dlsc.formsfx;
+    requires net.synedra.validatorfx;
+    requires org.kordamp.ikonli.javafx;
+    requires org.kordamp.bootstrapfx.core;
+    requires static lombok;
+    requires java.sql;
+    requires java.desktop;
+    //requires eu.hansolo.tilesfx;
+
+    opens com.hamitmizrak.ibb_ecodation_javafx to javafx.fxml;
+    exports com.hamitmizrak.ibb_ecodation_javafx;
+}
+
+
+/* Gerekli izinleri verdiğimiz yer
 module com.hamitmizrak.ibb_ecodation_javafx {
 
     // JavaFX'in temel bileşenlerini kullanmak için gerekli modüller
@@ -25,7 +46,7 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // BootstrapFX, Bootstrap benzeri CSS stillerini JavaFX'e entegre eder.
     requires org.kordamp.bootstrapfx.core;
 
-    // #######################################################################################
+    // #############################################
     // Lombok kütüphanesi, Java'da getter, setter, constructor gibi metotları otomatik oluşturur.
     // Lombok, derleme zamanı (compile-time) kullanıldığı için "static" olarak eklenmiştir.
     requires static lombok;
@@ -52,7 +73,7 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // Veritabanı bağlantısı sağlayan sınıfların da SQL modülüne açık olması gerekiyor.
     opens com.hamitmizrak.ibb_ecodation_javafx.database to java.sql;
 
-    // #######################################################################################
+    // #####################################################################
     // Paket dışa aktarmak
     // `exports` ifadesi, paketin diğer modüller tarafından erişilebilir olmasını sağlar.
 
@@ -64,22 +85,8 @@ module com.hamitmizrak.ibb_ecodation_javafx {
 
     // // Veritabanı bağlantı paketini dış dünyaya açıyoruz. Diğer modüller DB bağlantısını kullanabilir.
     exports com.hamitmizrak.ibb_ecodation_javafx.database;
-}
-
-
-/*module com.hamitmizrak.ibb_ecodation_javafx {
-    requires javafx.controls;
-    requires javafx.fxml;
-    //requires javafx.web;
-
-    requires org.controlsfx.controls;
-    requires com.dlsc.formsfx;
-    requires net.synedra.validatorfx;
-    requires org.kordamp.ikonli.javafx;
-    requires org.kordamp.bootstrapfx.core;
-    //requires eu.hansolo.tilesfx;
-
-    opens com.hamitmizrak.ibb_ecodation_javafx to javafx.fxml;
-    exports com.hamitmizrak.ibb_ecodation_javafx;
 }*/
+
+
+
 
