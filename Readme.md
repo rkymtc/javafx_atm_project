@@ -1,5 +1,6 @@
 # JavaFX Desktop
-[GitHub Address](https://github.com/hamitmizrak/ibb_ecodation_javafx)
+[Java FX GitHub Address](https://github.com/hamitmizrak/ibb_ecodation_javafx)
+[Java Core](https://github.com/hamitmizrak/ibb_ecodation_javacore.git )
 
 ## Git
 ```sh 
@@ -43,7 +44,88 @@ mvn clean package
 mvn clean package -DskipTests
 ```
 
-## 
+## JavaFX
 ```sh 
 
 ```
+
+
+## JavaFX
+```sh 
+
+```
+
+
+## JavaFX
+```sh 
+
+```
+
+## JavaFX
+```sh 
+
+```
+
+
+
+## JavaFX
+```sh 
+
+```
+
+
+## JavaFX
+```sh 
+
+```
+
+
+
+## JavaFX
+```sh 
+
+```
+
+
+## JavaFX
+```sh 
+
+```
+
+
+## JavaFX
+```sh 
+
+```
+
+
+## JavaFX
+```sh 
+
+```
+
+
+## JavaFX
+```sh 
+
+```
+
+## JavaFX
+```sh 
+
+```
+
+## JavaFX
+```sh 
+
+```
+
+## JavaFX
+```sh 
+
+```
+
+
+
+
+
