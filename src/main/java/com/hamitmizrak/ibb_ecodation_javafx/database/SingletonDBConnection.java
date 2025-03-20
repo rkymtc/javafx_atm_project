@@ -21,7 +21,7 @@ public class SingletonDBConnection {
     // Parametresiz Constructor (private ile dışarıdan erişilemez olmasını sağlamak)
     private SingletonDBConnection() {
         try {
-            // JDBC Yüksle
+            // JDBC Yükle
             Class.forName("org.h2.Driver");
             // Bağlantı oluşturmak
             this.connection= DriverManager.getConnection(URL, USERNAME,PASSWORD);
