@@ -107,6 +107,6 @@ public class SingletonPropertiesDBConnection {
         SingletonDBConnection.closeConnection();
     }
     public static void main(String[] args) throws SQLException {
-        dataSet();
+        //dataSet();
     }
 }
