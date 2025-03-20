@@ -1,5 +1,7 @@
 package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
+import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
+
 import java.sql.Connection;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +26,6 @@ public interface IDaoImplements <T> {
 
     // Gövdeli Method
     default Connection iDaoImplementsDatabaseConnection(){
-        return null;
+        return SingletonDBConnection.getInstance().getConnection();
     }
 }
