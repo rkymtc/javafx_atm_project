@@ -1,7 +1,7 @@
 package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
-import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
+//import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
 
 import java.sql.Connection;
 import java.util.List;

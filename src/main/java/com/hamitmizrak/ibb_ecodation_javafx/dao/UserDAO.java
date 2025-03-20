@@ -1,20 +1,37 @@
 package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
+import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
 
 // UserDAO
 public class UserDAO implements IDaoImplements<UserDTO> {
 
-    // Field
-
     // Injection
+    private Connection connection;
 
+    // Parametresiz Constructor
+    public UserDAO() {
+        this.connection= SingletonDBConnection.getInstance().getConnection();
+    }
+
+    /// ////////////////////////////////////////////////////////////////////
+    // CRUD
     // CREATE
     @Override
     public Optional<UserDTO> create(UserDTO userDTO) {
+        String sql= "INSERT INTO users (username,password,email) VALUES(?,?,?)";
+        try(PreparedStatement preparedStatement= connection.prepareStatement(sql)){
+            preparedStatement.setString(1, userDTO.getUsername());
+            preparedStatement.setString(2, userDTO.getPassword());
+            preparedStatement.setString(3, userDTO.getEmail());
+        }catch (Exception exception){
+            exception.printStackTrace();
+        }
         return Optional.empty();
     }
 

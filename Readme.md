@@ -218,10 +218,218 @@ Veritabanı bağlantısı kapatıldı.
 Bu kodu kendi projelerinde rahatlıkla kullanabilirsin! 🚀
 
 
-## JavaFX
+## Singleton Config Properties
 ```sh 
 
 ```
+Mevcut **SingletonDBConnection** sınıfına ekleyebileceğin bazı geliştirmeler ve ekstra özellikler:
+
+### **1. Daha Esnek ve Özelleştirilebilir Bağlantı Yönetimi**
+Şu an bağlantı bilgileri sınıf içinde sabit olarak tanımlanmış. Aşağıdaki geliştirmeleri yapabilirsin:
+- **Config dosyasından (properties veya environment) bağlantı bilgilerini okumak.**
+- **Bağlantı zaman aşımı eklemek.**
+- **Birden fazla veritabanı bağlantısını yönetmek (multi-database support).**
+
+#### **Geliştirilmiş Bağlantı Yapılandırması**
+```java
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
+
+public class SingletonDBConnection {
+    private static SingletonDBConnection instance;
+    private Connection connection;
+
+    private static String URL;
+    private static String USERNAME;
+    private static String PASSWORD;
+
+    // Constructor (private)
+    private SingletonDBConnection() {
+        try {
+            loadDatabaseConfig(); // Konfigürasyonu oku
+            Class.forName("org.h2.Driver");
+            this.connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            System.out.println("Veritabanı bağlantısı başarılı");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Veritabanı bağlantısı başarısız!");
+        }
+    }
+
+    // Konfigürasyonu yükleme
+    private static void loadDatabaseConfig() {
+        try (FileInputStream fis = new FileInputStream("config.properties")) {
+            Properties properties = new Properties();
+            properties.load(fis);
+            URL = properties.getProperty("db.url", "jdbc:h2:~/h2db/user_management");
+            USERNAME = properties.getProperty("db.username", "sa");
+            PASSWORD = properties.getProperty("db.password", "");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Veritabanı yapılandırması yüklenemedi!");
+        }
+    }
+
+    // Singleton Instance
+    public static synchronized SingletonDBConnection getInstance() {
+        if (instance == null) {
+            instance = new SingletonDBConnection();
+        }
+        return instance;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public static void closeConnection() {
+        if (instance != null && instance.connection != null) {
+            try {
+                instance.connection.close();
+                System.out.println("Veritabanı bağlantısı kapatıldı.");
+            } catch (SQLException e) {
+                throw new RuntimeException("Bağlantı kapatılırken hata oluştu!", e);
+            }
+        }
+    }
+}
+```
+#### **Örnek `config.properties` Dosyası**
+```
+db.url=jdbc:h2:~/h2db/user_management
+db.username=sa
+db.password=
+```
+**➜ Avantajları:**
+- Bağlantı bilgileri hard-coded yerine **config dosyasından** alınır.
+- Farklı veritabanı bağlantılarını yönetmek daha kolay olur.
+- Uygulamanın daha taşınabilir ve güvenli olması sağlanır.
+
+---
+
+### **2. Bağlantı Sağlığını Kontrol Etme (Connection Health Check)**
+Bağlantının açık olup olmadığını anlamak için aşağıdaki metodu ekleyebilirsin:
+```java
+public boolean isConnectionValid() {
+    try {
+        return connection != null && !connection.isClosed();
+    } catch (SQLException e) {
+        return false;
+    }
+}
+```
+Kullanımı:
+```java
+if(SingletonDBConnection.getInstance().isConnectionValid()) {
+    System.out.println("Bağlantı aktif!");
+} else {
+    System.out.println("Bağlantı kapalı!");
+}
+```
+**➜ Avantajları:**
+- Bağlantının düşüp düşmediğini anlayarak yeniden bağlanma stratejileri geliştirilebilir.
+
+---
+
+### **3. Bağlantı Yeniden Başlatma (Reconnect)**
+Eğer bağlantı zamanla koparsa, aşağıdaki gibi bir **reconnect()** metodu ekleyebilirsin:
+```java
+public void reconnect() {
+    try {
+        if (connection == null || connection.isClosed()) {
+            instance = new SingletonDBConnection();
+            System.out.println("Veritabanına yeniden bağlanıldı.");
+        }
+    } catch (SQLException e) {
+        throw new RuntimeException("Bağlantı yeniden başlatılamadı!", e);
+    }
+}
+```
+Kullanımı:
+```java
+SingletonDBConnection.getInstance().reconnect();
+```
+**➜ Avantajları:**
+- Uygulama çalışırken bağlantı koparsa, programın çökmesini önler.
+- Otomatik bağlantı yenileme özelliği eklenmiş olur.
+
+---
+
+### **4. Logging Mekanizması Ekleme**
+Şu an hata yönetimi `System.out.println()` ile yapılıyor. Bunun yerine bir **Logger** kullanabilirsin:
+```java
+import java.util.logging.Logger;
+
+private static final Logger LOGGER = Logger.getLogger(SingletonDBConnection.class.getName());
+
+private SingletonDBConnection() {
+    try {
+        Class.forName("org.h2.Driver");
+        this.connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        LOGGER.info("Veritabanı bağlantısı başarılı!");
+    } catch (Exception e) {
+        LOGGER.severe("Bağlantı hatası: " + e.getMessage());
+        throw new RuntimeException("Veritabanı bağlantısı başarısız!", e);
+    }
+}
+```
+**➜ Avantajları:**
+- Hataların **log dosyasına** yazılması sağlanır.
+- Sistem takip edilebilir hale gelir.
+
+---
+
+### **5. Bağlantı Havuzu (Connection Pool) Kullanımı**
+- Eğer uygulamada çok fazla eşzamanlı bağlantı gerekecekse, **Singleton yerine Connection Pool (HikariCP gibi kütüphaneler)** kullanılabilir.
+- HikariCP gibi kütüphaneler kullanarak performansı artırabilirsin.
+
+Örnek:
+```java
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import javax.sql.DataSource;
+
+public class HikariCPDatabase {
+    private static HikariDataSource dataSource;
+
+    static {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:h2:~/h2db/user_management");
+        config.setUsername("sa");
+        config.setPassword("");
+        config.setMaximumPoolSize(10); // Maksimum 10 bağlantı
+        dataSource = new HikariDataSource(config);
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
+    }
+}
+```
+**➜ Avantajları:**
+- Tek bir bağlantı yerine, havuzdan **birden fazla bağlantı yönetilebilir**.
+- Performans önemli ölçüde artar.
+
+---
+
+### **Sonuç ve Özet**
+Mevcut **SingletonDBConnection** sınıfına ekleyebileceğin özellikler:
+✅ **Bağlantı bilgilerini config dosyasından okumak.**  
+✅ **Bağlantının durumunu kontrol etmek (`isConnectionValid()`).**  
+✅ **Bağlantıyı yeniden başlatmak (`reconnect()`).**  
+✅ **Logging mekanizması eklemek (`Logger`).**  
+✅ **Bağlantı havuzu (HikariCP) kullanmak.**
+
+**Gelecekte ekleyebileceğin özellikler:**
+- **Bağlantı hatalarını otomatik olarak ele alan bir Retry mekanizması.**
+- **Şifreleri güvenli hale getirmek için şifreleme mekanizması (örneğin, Java KeyStore kullanımı).**
+- **Bağlantı yönetimini daha esnek hale getirmek için Dependency Injection (DI) ile yönetmek (Spring, Guice).**
+
+Bu eklemelerle kodunu daha sağlam, esnek ve güvenli hale getirebilirsin! 🚀
 
 
 ## JavaFX
