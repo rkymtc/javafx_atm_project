@@ -1,6 +1,7 @@
 package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
+import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 //import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
 
 import java.sql.Connection;
@@ -13,7 +14,7 @@ public interface IDaoImplements <T> {
     Optional<T> create(T t);
 
     // LIST
-    List<T> list();
+    Optional<List<T>>list();
 
     // FIND
     Optional<T> findByName(String name);

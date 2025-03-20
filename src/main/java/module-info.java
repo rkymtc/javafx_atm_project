@@ -34,7 +34,7 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // JDBC ile veritabanı bağlantısı kurabilmek için gerekli modül
     // Java'daki SQL işlemlerini (Connection, Statement, ResultSet vb.) gerçekleştirebilmek için gereklidir.
     requires java.sql;
-    requires java.desktop;
+    requires org.apache.poi.poi;
     //requires eu.hansolo.tilesfx;
 
     // #######################################################################################
