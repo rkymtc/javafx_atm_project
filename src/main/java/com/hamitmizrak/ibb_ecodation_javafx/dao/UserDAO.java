@@ -84,51 +84,14 @@ public class UserDAO implements IDaoImplements<UserDTO> {
     public Optional<UserDTO> findByName(String name) {
         //String sql = "SELECT * FROM users WHERE username=?";
         String sql = "SELECT * FROM users WHERE email=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setString(1, name);
-
-            ResultSet resultSet = preparedStatement.executeQuery(sql);
-            // Veritabanından gelen veri varsa
-            if (resultSet.next()) {
-                UserDTO userDTO = UserDTO.builder()
-                        .id(resultSet.getInt("id"))
-                        .username(resultSet.getString("username"))
-                        .email(resultSet.getString("email"))
-                        .password(resultSet.getString("password"))
-                        .build();
-                return Optional.of(userDTO);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        // Eğer Bulunamazsa boş dönder
-        return Optional.empty();
+        return selectSingle(sql,name);
     }
 
     // FIND BY ID
     @Override
     public Optional<UserDTO> findById(int id) {
         String sql = "SELECT * FROM users WHERE id=?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setInt(1, id);
-
-            ResultSet resultSet = preparedStatement.executeQuery(sql);
-            // Veritabanından gelen veri varsa
-            if (resultSet.next()) {
-                UserDTO userDTO = UserDTO.builder()
-                        .id(resultSet.getInt("id"))
-                        .username(resultSet.getString("username"))
-                        .email(resultSet.getString("email"))
-                        .password(resultSet.getString("password"))
-                        .build();
-                return Optional.of(userDTO);
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        // Eğer Bulunamazsa boş dönder
-        System.out.println(SpecialColor.GREEN + " Aradaığınız " + id + " id bulunamadı.");
-        return Optional.empty();
+        return selectSingle(sql,id);
     }
 
     // UPDATE
@@ -141,7 +104,7 @@ public class UserDAO implements IDaoImplements<UserDTO> {
                 preparedStatement.setString(1, userDTO.getUsername());
                 preparedStatement.setString(2, userDTO.getPassword());
                 preparedStatement.setString(3, userDTO.getEmail());
-                preparedStatement.setInt(4, userDTO.getId());
+                preparedStatement.setInt(4, id);
 
                 // CREATE, DELETE, UPDATE
                 int affectedRows = preparedStatement.executeUpdate();
@@ -180,6 +143,41 @@ public class UserDAO implements IDaoImplements<UserDTO> {
             }
         }
         // Eğer Silinecek id veri yoksa boş dönder.
+        return Optional.empty();
+    }
+
+    /// ////////////////////////////////////////////////////////////////
+    // GENERICS METOTO (LIST,FIND)
+    // ResultSet'ten UserDTO oluşturmayı tek bir yardımcı metot
+    // ResultSetten UserDTO oluştur
+    @Override
+     UserDTO mapToObjectDTO(ResultSet resultSet) throws SQLException {
+        return UserDTO.builder()
+                .id(resultSet.getInt("id"))
+                .username(resultSet.getString("username"))
+                .password(resultSet.getString("password"))
+                .email(resultSet.getString("email"))
+                .build();
+    }
+
+    // dizi elemanları(Değişkenler birden fazla olabilir)
+    // ID veya NAME ile veri çektiğimizde bu ortak metot kullanılır
+    // Generics ile Tek kayıt Döndüren Metot
+    @Override
+    public Optional<UserDTO> selectSingle(String sql, Object... params) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                preparedStatement.setObject((i + 1), params[i]);
+            }
+
+            try(ResultSet resultSet =preparedStatement.executeQuery()){
+                if(resultSet.next()){
+                    return Optional.of(mapToObjectDTO(resultSet));
+                }
+            }
+        } catch (Exception exception) {
+            exception.printStackTrace();
+        }
         return Optional.empty();
     }
 
