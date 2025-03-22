@@ -7,6 +7,8 @@ module com.hamitmizrak.ibb_ecodation_javafx {
 
     // JavaFX FXML dosyalarını (FXML UI tasarımları) yükleyebilmek için gereklidir.
     requires javafx.fxml;
+
+    // WEB
     //requires javafx.web;
 
     // #######################################################################################
@@ -35,6 +37,7 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // Java'daki SQL işlemlerini (Connection, Statement, ResultSet vb.) gerçekleştirebilmek için gereklidir.
     requires java.sql;
     requires org.apache.poi.poi;
+    requires java.desktop;
     //requires eu.hansolo.tilesfx;
 
     // #######################################################################################
@@ -43,20 +46,8 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // Ana paket (Root package) açılıyor, böylece FXML dosyalarından erişilebilir.
     opens com.hamitmizrak.ibb_ecodation_javafx to javafx.fxml;
 
-
     // DTO (Data Transfer Object) paketinin içeriği, JavaFX bileşenleri ve Lombok tarafından erişilebilir olmalıdır.
     opens com.hamitmizrak.ibb_ecodation_javafx.dto to javafx.base, lombok;
-
-    // #####################################################################
-    // Paket dışa aktarmak
-    // `exports` ifadesi, paketin diğer modüller tarafından erişilebilir olmasını sağlar.
-
-    // Ana paketi dış dünyaya açıyoruz. Diğer modüller bu paketin içeriğini kullanabilir.
-    exports com.hamitmizrak.ibb_ecodation_javafx;
-}
-
-
-/*
 
     // Controller sınıfları FXML tarafından kullanılacağı için açılması gerekiyor.
     opens com.hamitmizrak.ibb_ecodation_javafx.controller to javafx.fxml;
@@ -67,20 +58,23 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // Veritabanı bağlantısı sağlayan sınıfların da SQL modülüne açık olması gerekiyor.
     opens com.hamitmizrak.ibb_ecodation_javafx.database to java.sql;
 
+    // #####################################################################
+    // Paket dışa aktarmak
+    // `exports` ifadesi, paketin diğer modüller tarafından erişilebilir olmasını sağlar.
 
-
- // #####################################################################
     // DAO sınıflarını dışarıya açıyoruz. Böylece başka modüller veritabanı işlemlerini çağırabilir.
     exports com.hamitmizrak.ibb_ecodation_javafx.dao;
 
     // // Veritabanı bağlantı paketini dış dünyaya açıyoruz. Diğer modüller DB bağlantısını kullanabilir.
     exports com.hamitmizrak.ibb_ecodation_javafx.database;
-}*/
 
+    // Ana paketi dış dünyaya açıyoruz. Diğer modüller bu paketin içeriğini kullanabilir.
+    exports com.hamitmizrak.ibb_ecodation_javafx;
+}
 
-
-/*Default*/
-/*module com.hamitmizrak.ibb_ecodation_javafx {
+//Default
+/*
+module com.hamitmizrak.ibb_ecodation_javafx {
         requires javafx.controls;
         requires javafx.fxml;
         //requires javafx.web;
@@ -97,5 +91,6 @@ module com.hamitmizrak.ibb_ecodation_javafx {
 
         opens com.hamitmizrak.ibb_ecodation_javafx to javafx.fxml;
         exports com.hamitmizrak.ibb_ecodation_javafx;
-        }*/
+        }
+*/
 

@@ -432,74 +432,12 @@ Mevcut **SingletonDBConnection** sınıfına ekleyebileceğin özellikler:
 Bu eklemelerle kodunu daha sağlam, esnek ve güvenli hale getirebilirsin! 🚀
 
 
-## JavaFX
-```sh 
-
-```
-
-## JavaFX
+## Other
 ```sh 
 
 ```
 
 
-
-## JavaFX
-```sh 
-
-```
-
-
-## JavaFX
-```sh 
-
-```
-
-
-
-## JavaFX
-```sh 
-
-```
-
-
-## JavaFX
-```sh 
-
-```
-
-
-## JavaFX
-```sh 
-
-```
-
-
-## JavaFX
-```sh 
-
-```
-
-
-## JavaFX
-```sh 
-
-```
-
-## JavaFX
-```sh 
-
-```
-
-## JavaFX
-```sh 
-
-```
-
-## JavaFX
-```sh 
-
-```
 
 
 
