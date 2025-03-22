@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public class UserController  implements IDaoImplements<UserDTO> {
+public class UserController implements IDaoImplements<UserDTO> {
 
     // Injection
 
@@ -49,19 +49,6 @@ public class UserController  implements IDaoImplements<UserDTO> {
         return Optional.empty();
     }
 
-    // GENERICS METOTO (LIST,FIND)
-    // ResultSet'ten UserDTO oluşturmayı tek bir yardımcı metot
-    // ResultSetten UserDTO oluştur
-    @Override
-    public UserDTO mapToObjectDTO(ResultSet resultSet) throws SQLException {
-        return null;
-    }
-
-
-    @Override
-    public Optional<UserDTO> selectSingle(String sql, Object... params) {
-        return Optional.empty();
-    }
 
     @Override
     public Optional loginUser(String username, String password) {
