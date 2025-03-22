@@ -2,7 +2,6 @@ package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
-import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,6 +19,7 @@ public class UserDAO implements IDaoImplements<UserDTO> {
 
     // Parametresiz Constructor
     public UserDAO() {
+        // Default Değerler
         this.connection = SingletonDBConnection.getInstance().getConnection();
     }
 
@@ -84,14 +84,14 @@ public class UserDAO implements IDaoImplements<UserDTO> {
     public Optional<UserDTO> findByName(String name) {
         //String sql = "SELECT * FROM users WHERE username=?";
         String sql = "SELECT * FROM users WHERE email=?";
-        return selectSingle(sql,name);
+        return selectSingle(sql, name);
     }
 
     // FIND BY ID
     @Override
     public Optional<UserDTO> findById(int id) {
         String sql = "SELECT * FROM users WHERE id=?";
-        return selectSingle(sql,id);
+        return selectSingle(sql, id);
     }
 
     // UPDATE
@@ -151,7 +151,7 @@ public class UserDAO implements IDaoImplements<UserDTO> {
     // ResultSet'ten UserDTO oluşturmayı tek bir yardımcı metot
     // ResultSetten UserDTO oluştur
     @Override
-     UserDTO mapToObjectDTO(ResultSet resultSet) throws SQLException {
+    public UserDTO mapToObjectDTO(ResultSet resultSet) throws SQLException {
         return UserDTO.builder()
                 .id(resultSet.getInt("id"))
                 .username(resultSet.getString("username"))
@@ -170,8 +170,8 @@ public class UserDAO implements IDaoImplements<UserDTO> {
                 preparedStatement.setObject((i + 1), params[i]);
             }
 
-            try(ResultSet resultSet =preparedStatement.executeQuery()){
-                if(resultSet.next()){
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
                     return Optional.of(mapToObjectDTO(resultSet));
                 }
             }
@@ -181,4 +181,11 @@ public class UserDAO implements IDaoImplements<UserDTO> {
         return Optional.empty();
     }
 
+    /// /////////////////////////////////////////////////////////////////////
+    /// LOGIN (ILogin interface)
+    @Override
+    public Optional loginUser(String username, String password) {
+        String sql = "SELECT * FROM users WHERE username=?, AND password=?";
+        return selectSingle(sql, username, password);
+    }
 } //end class

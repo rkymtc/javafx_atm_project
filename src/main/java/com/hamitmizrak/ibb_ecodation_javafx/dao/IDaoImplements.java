@@ -1,24 +1,24 @@
 package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
-import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
-//import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public interface IDaoImplements <T> {
+public interface IDaoImplements<T> extends ILogin {
 
     // CREATE
     Optional<T> create(T t);
 
     // LIST
-    Optional<List<T>>list();
+    Optional<List<T>> list();
 
     // FIND
     Optional<T> findByName(String name);
+
     Optional<T> findById(int id);
 
     // UPDATE
@@ -31,7 +31,7 @@ public interface IDaoImplements <T> {
     // GENERICS METOTO (LIST,FIND)
     // ResultSet'ten UserDTO oluşturmayı tek bir yardımcı metot
     // ResultSetten UserDTO oluştur
-    T mapToObjectDTO(ResultSet resultSet);
+    T mapToObjectDTO(ResultSet resultSet) throws SQLException;
 
     // dizi elemanları(Değişkenler birden fazla olabilir)
     // ID veya NAME ile veri çektiğimizde bu ortak metot kullanılır
@@ -40,7 +40,7 @@ public interface IDaoImplements <T> {
 
     /// ////////////////////////////////////////////////////////////////
     // Gövdeli Method
-    default Connection iDaoImplementsDatabaseConnection(){
+    default Connection iDaoImplementsDatabaseConnection() {
         // Singleton DB
         return SingletonDBConnection.getInstance().getConnection();
 
