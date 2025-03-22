@@ -1,31 +1,13 @@
 package com.hamitmizrak.ibb_ecodation_javafx.dao;
 
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
+import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
-public interface IDaoImplements<T> extends ILogin, IGenericsMethod {
+public interface IDaoImplements<T> extends ICrud,IGenericsMethod,ILogin {
 
-    // CREATE
-    Optional<T> create(T t);
-
-    // LIST
-    Optional<List<T>> list();
-
-    // FIND
-    Optional<T> findByName(String name);
-
-    Optional<T> findById(int id);
-
-    // UPDATE
-    Optional<T> update(int id, T t);
-
-    // DELETE
-    Optional<T> delete(int id);
 
     /// ////////////////////////////////////////////////////////////////
     // Gövdeli Method
@@ -36,4 +18,8 @@ public interface IDaoImplements<T> extends ILogin, IGenericsMethod {
         // Singleton Config
         //return SingletonPropertiesDBConnection.getInstance().getConnection();
     }
+
+    // CRUD
+    // CREATE
+    Optional<UserDTO> create(UserDTO userDTO);
 }
