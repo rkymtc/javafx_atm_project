@@ -432,11 +432,448 @@ Mevcut **SingletonDBConnection** sınıfına ekleyebileceğin özellikler:
 Bu eklemelerle kodunu daha sağlam, esnek ve güvenli hale getirebilirsin! 🚀
 
 
+## VBOX
+```sh 
+
+```
+JavaFX’te `VBox`, bir **layout (yerleşim) yöneticisidir**. Yani sahnedeki bileşenlerin (button, label, textfield vb.) nasıl konumlandırılacağını belirleyen bir konteynerdir. `VBox` özel olarak **bileşenleri dikey (vertical)** olarak yerleştirir. Her yeni bileşen, bir öncekinin **altına** gelecek şekilde sıralanır.
+
+---
+
+## 🔷 Tanım
+
+### 📌 `VBox (Vertical Box)`
+`VBox`, JavaFX’te birden fazla UI bileşenini **dikey olarak (üstten alta)** sıralamak için kullanılır.
+
+---
+
+## 🧠 Temel Özellikleri
+
+| Özellik             | Açıklama |
+|---------------------|---------|
+| Dikey hizalama      | Bileşenleri üstten alta sıralar. |
+| `spacing`           | Bileşenler arasında boşluk bırakmak için kullanılır. |
+| `alignment`         | İçeriklerin hizasını belirler (`CENTER`, `TOP_LEFT` vb.). |
+| `padding`           | Kutu içindeki kenar boşluklarını ayarlar. |
+| `setFillWidth(true)`| Bileşenlerin kutunun genişliğini doldurmasını sağlar. |
+
+---
+
+## 📎 FXML Kullanımı
+
+```xml
+<VBox spacing="10" alignment="CENTER" padding="20"
+      xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml">
+    
+    <Label text="Kullanıcı Adı:" />
+    <TextField fx:id="usernameField" />
+    <Label text="Şifre:" />
+    <PasswordField fx:id="passwordField" />
+    <Button text="Giriş Yap" onAction="#handleLogin" />
+    
+</VBox>
+```
+
+### 🔍 Ne yapıyor bu VBox?
+
+- Tüm bileşenler dikey sırayla gösteriliyor.
+- Her bileşen arasında `10px` boşluk var (`spacing="10"`).
+- İçerikler `CENTER` hizalanmış.
+- Kenarlardan `20px` boşluk var (`padding="20"`).
+
+---
+
+## 📦 Java Koduyla VBox Kullanımı
+
+```java
+VBox vbox = new VBox();
+vbox.setSpacing(10);
+vbox.setAlignment(Pos.CENTER);
+vbox.setPadding(new Insets(20));
+
+Label label = new Label("Ad:");
+TextField textField = new TextField();
+Button button = new Button("Gönder");
+
+vbox.getChildren().addAll(label, textField, button);
+
+Scene scene = new Scene(vbox, 300, 200);
+stage.setScene(scene);
+stage.show();
+```
+
+---
+
+## 🧱 VBox ile HBox Farkı
+
+| Özellik      | VBox                        | HBox                        |
+|--------------|-----------------------------|-----------------------------|
+| Yerleşim     | Dikey (üstten alta)         | Yatay (soldan sağa)         |
+| Kullanım Alanı | Formlar, liste görünümleri  | Menü çubukları, araç çubukları |
+
+---
+
+## 🎯 Nerede Kullanılır?
+
+- Form tasarımlarında (Login ekranı, kayıt formu vb.)
+- Dikey menülerde
+- Liste veya kart görünümlerinde
+- Sayfa düzenlemesi yaparken içeriği sırayla aşağı yerleştirmek istediğinde
+
+---
+
+## 📌 Özet
+
+> `VBox`, JavaFX'te bileşenleri **üstten aşağı doğru sıralayan** bir layout yöneticisidir. İçerikleri düzenli, hizalı ve okunabilir şekilde yerleştirmede büyük kolaylık sağlar.
+
+---
+
+aynı örneği `HBox`, `GridPane` veya `BorderPane` gibi diğer layout’larla da karşılaştırmalı 
+
+
+## HBox,GridPane,BorderPane
+```sh 
+
+```
+Süper! O zaman şimdi JavaFX'teki en sık kullanılan **layout (yerleşim) yöneticilerini** senin için karşılaştıralım. Her birinin kullanım amacı farklıdır, tasarım yaparken hangisini seçeceğin bu farklara göre değişir.
+
+---
+
+## 🔧 JavaFX Layout Yöneticileri Karşılaştırması
+
+| Layout       | Yerleşim Şekli                         | Avantajları                              | Ne Zaman Kullanılır?                  |
+|--------------|----------------------------------------|------------------------------------------|---------------------------------------|
+| `VBox`       | Dikey (üstten alta)                    | Basit form yapıları, kolay hizalama      | Formlar, login ekranları              |
+| `HBox`       | Yatay (soldan sağa)                    | Menü barı, buton grupları için ideal     | ToolBar, navbar                       |
+| `GridPane`   | Satır ve sütun (grid) tabanlı          | Hücre hücre kontrol, tablo görünümü      | Formlar, karmaşık düzenlemeler        |
+| `BorderPane` | Beş bölge: Top, Bottom, Left, Right, Center | Sayfa iskeleti için ideal            | Ana pencere düzeni                    |
+| `StackPane`  | Bileşenleri üst üste yerleştirir       | Basit overlay (kaplama) sistemleri       | Pop-up, yüzen içerikler               |
+| `FlowPane`   | Bileşenleri otomatik sıraya dizer      | Responsive görünüm, sığmayanlar alt satıra geçer | Kartlar, dinamik liste                |
+| `AnchorPane` | Bileşenleri kenarlara sabitler         | Özgür pozisyonlama, piksel hassasiyet    | Özgün tasarımlar, özel UI ihtiyaçları |
+
+---
+
+## 🔍 Aynı İçeriğin 4 Farklı Layout ile Uygulanışı
+
+Örnek olarak: **Ad – Şifre – Giriş Butonu** olan bir login ekranı yapalım.
+
+---
+
+### ✅ VBox ile
+
+```xml
+<VBox spacing="10" alignment="CENTER" padding="20">
+    <Label text="Ad" />
+    <TextField />
+    <Label text="Şifre" />
+    <PasswordField />
+    <Button text="Giriş Yap" />
+</VBox>
+```
+
+- Kolay ve sade dikey form yapısı
+- Sıralama çok net
+- Mobil görünüme uygun
+
+---
+
+### ✅ HBox ile
+
+```xml
+<HBox spacing="10" alignment="CENTER" padding="20">
+    <Label text="Ad" />
+    <TextField />
+    <Button text="Giriş Yap" />
+</HBox>
+```
+
+- Her şey **aynı satırda**
+- Küçük formlar veya hızlı işlem butonları için ideal
+- Alanı yatay kullanan uygulamalarda avantajlı
+
+---
+
+### ✅ GridPane ile
+
+```xml
+<GridPane hgap="10" vgap="10" padding="20">
+    <Label text="Ad" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <TextField GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    
+    <Label text="Şifre" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <PasswordField GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    
+    <Button text="Giriş Yap" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+</GridPane>
+```
+
+- Hücre bazlı tasarım
+- Kolon hizalamaları mükemmel olur
+- Özellikle **karmaşık form** ya da tablolarda kullanılır
+
+---
+
+### ✅ BorderPane ile
+
+```xml
+<BorderPane padding="20">
+    <top>
+        <Label text="Giriş Paneli" />
+    </top>
+    <center>
+        <VBox spacing="10">
+            <TextField promptText="Ad" />
+            <PasswordField promptText="Şifre" />
+            <Button text="Giriş Yap" />
+        </VBox>
+    </center>
+</BorderPane>
+```
+
+- Sayfayı 5'e böler: top, left, right, center, bottom
+- Profesyonel bir uygulama iskeleti kurmak için ideal
+- Menü üstte, içerik ortada, footer altta şeklinde yapılar kurulur
+
+---
+
+## 🧠 Hangi Layout Ne Zaman Kullanılır?
+
+| Senaryo                           | Tercih Edilecek Layout  |
+|----------------------------------|--------------------------|
+| Basit form tasarımı              | `VBox` veya `GridPane`  |
+| Yatay buton dizisi               | `HBox`                  |
+| Sayfa iskeleti (başlık, içerik, altlık) | `BorderPane`           |
+| Duyarlı ve dinamik içerikler     | `FlowPane`              |
+| Özgürce konumlandırmak istiyorsan| `AnchorPane`            |
+| Popup, modal gibi yüzen içerikler| `StackPane`             |
+
+---
+
+## 🎁 Bonus: VBox + HBox Kombinasyonu
+
+```xml
+<VBox spacing="15" padding="20">
+    <Label text="Giriş Paneli" />
+    
+    <HBox spacing="10">
+        <Label text="Kullanıcı Adı:" />
+        <TextField />
+    </HBox>
+
+    <HBox spacing="10">
+        <Label text="Şifre:" />
+        <PasswordField />
+    </HBox>
+
+    <Button text="Giriş Yap" />
+</VBox>
+```
+
+- Her satırda yatay düzen (`HBox`)
+- Tüm satırlar dikey sıralanıyor (`VBox`)
+- Bu kombinasyon çok kullanılır.
+
+---
+
+
+
+## HBox,GridPane,BorderPane (Örneği)
+```sh 
+
+```
+Süper! O zaman sana **JavaFX layout’larını içeren mini bir örnek proje** hazırlayayım. Bu örnekte:
+
+- Farklı layout türlerini (VBox, HBox, GridPane, BorderPane) kullanacağız,
+- Her layout bir sekmede (TabPane içinde) yer alacak,
+- Login formu örneğini her layout ile nasıl yaparız, onu göstereceğim.
+
+---
+
+## 🎯 Proje Yapısı
+
+```
+LayoutDemo/
+│
+├── src/
+│   └── com/example/layoutdemo/
+│       ├── MainApp.java
+│       └── LayoutDemoView.java
+```
+
+---
+
+## 1. `MainApp.java`
+
+```java
+package com.example.layoutdemo;
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class MainApp extends Application {
+
+    @Override
+    public void start(Stage primaryStage) {
+        LayoutDemoView layoutDemoView = new LayoutDemoView();
+        Scene scene = new Scene(layoutDemoView.getView(), 500, 350);
+
+        primaryStage.setTitle("JavaFX Layout Örnekleri");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
+```
+
+---
+
+## 2. `LayoutDemoView.java`
+
+```java
+package com.example.layoutdemo;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+
+public class LayoutDemoView {
+
+    public Parent getView() {
+        TabPane tabPane = new TabPane();
+
+        Tab vboxTab = new Tab("VBox");
+        vboxTab.setContent(createVBoxExample());
+        vboxTab.setClosable(false);
+
+        Tab hboxTab = new Tab("HBox");
+        hboxTab.setContent(createHBoxExample());
+        hboxTab.setClosable(false);
+
+        Tab gridTab = new Tab("GridPane");
+        gridTab.setContent(createGridExample());
+        gridTab.setClosable(false);
+
+        Tab borderTab = new Tab("BorderPane");
+        borderTab.setContent(createBorderExample());
+        borderTab.setClosable(false);
+
+        tabPane.getTabs().addAll(vboxTab, hboxTab, gridTab, borderTab);
+
+        return tabPane;
+    }
+
+    private VBox createVBoxExample() {
+        VBox vbox = new VBox(10);
+        vbox.setPadding(new Insets(20));
+        vbox.setAlignment(Pos.CENTER);
+
+        Label nameLabel = new Label("Ad:");
+        TextField nameField = new TextField();
+
+        Label passLabel = new Label("Şifre:");
+        PasswordField passField = new PasswordField();
+
+        Button loginBtn = new Button("Giriş Yap");
+
+        vbox.getChildren().addAll(nameLabel, nameField, passLabel, passField, loginBtn);
+        return vbox;
+    }
+
+    private HBox createHBoxExample() {
+        HBox hbox = new HBox(10);
+        hbox.setPadding(new Insets(20));
+        hbox.setAlignment(Pos.CENTER);
+
+        Label nameLabel = new Label("Ad:");
+        TextField nameField = new TextField();
+
+        Button loginBtn = new Button("Giriş Yap");
+
+        hbox.getChildren().addAll(nameLabel, nameField, loginBtn);
+        return hbox;
+    }
+
+    private GridPane createGridExample() {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        Label nameLabel = new Label("Ad:");
+        TextField nameField = new TextField();
+
+        Label passLabel = new Label("Şifre:");
+        PasswordField passField = new PasswordField();
+
+        Button loginBtn = new Button("Giriş Yap");
+
+        grid.add(nameLabel, 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(passLabel, 0, 1);
+        grid.add(passField, 1, 1);
+        grid.add(loginBtn, 1, 2);
+
+        return grid;
+    }
+
+    private BorderPane createBorderExample() {
+        BorderPane borderPane = new BorderPane();
+        borderPane.setPadding(new Insets(20));
+
+        Label header = new Label("Giriş Paneli");
+        BorderPane.setAlignment(header, Pos.CENTER);
+        borderPane.setTop(header);
+
+        VBox centerBox = new VBox(10);
+        centerBox.setAlignment(Pos.CENTER);
+        centerBox.setPadding(new Insets(20));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Ad");
+
+        PasswordField passField = new PasswordField();
+        passField.setPromptText("Şifre");
+
+        Button loginBtn = new Button("Giriş Yap");
+
+        centerBox.getChildren().addAll(nameField, passField, loginBtn);
+        borderPane.setCenter(centerBox);
+
+        return borderPane;
+    }
+}
+```
+
+---
+
+## 🧪 Projeyi Çalıştırınca Ne Olur?
+
+- Ekranda bir sekme sistemi (`TabPane`) görünür,
+- Her sekmede farklı bir layout türü kullanılarak yapılmış login formu gösterilir,
+- Hepsini aynı veri yapısıyla karşılaştırma şansın olur.
+
+---
+
+## 🛠 Geliştirme Önerileri
+
+- Her form girişine bir `Label`, `TextField`, `Button` kombinasyonu eklersen form kullanımı daha anlamlı olur.
+- `onAction` eventleriyle butonlara işlev kazandırabilirsin.
+- Layout’lara CSS ekleyerek görselliği güçlendirebilirsin.
+
+---
+
+
 ## Other
 ```sh 
 
 ```
-
 
 
 

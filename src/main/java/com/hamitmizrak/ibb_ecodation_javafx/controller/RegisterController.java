@@ -4,4 +4,6 @@ public class RegisterController {
 
     // Injection
 
+    public void register(){}
+
 }
