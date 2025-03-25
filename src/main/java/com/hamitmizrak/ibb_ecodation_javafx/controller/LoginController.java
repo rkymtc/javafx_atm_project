@@ -73,13 +73,13 @@ public class LoginController {
         username = usernameField.getText();
         password = passwordField.getText();
 
-        // optionalUserDTO(Veri tabanına ekle)
-        Optional<UserDTO> optionalUserDTO = userDAO.loginUser(username, password);
+        // optionalLoginUserDTO(Veri tabanına ekle)
+        Optional<UserDTO> optionalLoginUserDTO = userDAO.loginUser(username, password);
 
         // Eğer Veri Boş değilse
-        if (optionalUserDTO.isPresent()) {
-            // Veriyi almak
-            UserDTO userDTO = optionalUserDTO.get();
+        if (optionalLoginUserDTO.isPresent()) {
+            // UserDTO Verisini almak
+            UserDTO userDTO = optionalLoginUserDTO.get();
 
             // Eğer başarılıysa Pop-up göster
             showAlert("Başarılı", "Giriş Başarılı", Alert.AlertType.INFORMATION);
