@@ -36,6 +36,12 @@
                 <Button text="Kullanıcı Sil" onAction="#deleteUser" />
             </HBox>
 
+            <!--Butonları Yatay olarak düzenlenmesini için-->
+            <HBox spacing="10">
+                <Button text="Tabloyu Yenile" onAction="#refleshTable" />
+                <Button text="Çıkış Yap" onAction="#logout" />
+            </HBox>
+
         </VBox>
     </children>
 </AnchorPane>
