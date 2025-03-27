@@ -2,6 +2,9 @@ package com.hamitmizrak.ibb_ecodation_javafx.controller;
 
 import com.hamitmizrak.ibb_ecodation_javafx.dao.UserDAO;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.SceneHelper;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -70,8 +73,8 @@ public class LoginController {
     public void login() {
         // Kullanıcı Giriş Yaparken Username, Password Almak
         String username, password;
-        username = usernameField.getText();
-        password = passwordField.getText();
+        username = usernameField.getText().trim();
+        password = passwordField.getText().trim();
 
         // optionalLoginUserDTO(Veri tabanına ekle)
         Optional<UserDTO> optionalLoginUserDTO = userDAO.loginUser(username, password);
@@ -84,12 +87,30 @@ public class LoginController {
             // Eğer başarılıysa Pop-up göster
             showAlert("Başarılı", "Giriş Başarılı", Alert.AlertType.INFORMATION);
 
-            // Kayıt başarılı ise Admin Panelkine geçiş sağla
-            openAdminPane();
+            // Permission
+            if(userDTO.getRole()== ERole.ADMIN){
+                // Kayıt başarılı ise Admin Panelkine geçiş sağla
+                openAdminPane();
+            }else{
+                openUserHomePane();
+            }
 
         } else {
             // Eğer bilgiler yanlışsa, database kayıt olmamışsa
-            showAlert("Başarılı", "Giriş Başarılı", Alert.AlertType.ERROR);
+            showAlert("Başarısız", "Giriş Başarısız", Alert.AlertType.ERROR);
+        }
+    }
+
+    /// //////////////////////////////////////////////////////////////////////////////////////
+    // Eğer Login başarılıysa Admin Panel(Dashboard)
+    private void openUserHomePane() {
+        try {
+            SceneHelper.switchScene(FXMLPath.USER_HOME, usernameField,"User Panel");
+        } catch (Exception e) {
+            //throw new RuntimeException(e);
+            System.out.println(SpecialColor.RED + "User Sayfasına yönlendirilmedi" + SpecialColor.RESET);
+            e.printStackTrace();
+            showAlert("Hata", "User Ekranı Yüklenemedi", Alert.AlertType.ERROR);
         }
     }
 
@@ -97,8 +118,9 @@ public class LoginController {
     // Eğer Login başarılıysa Admin Panel(Dashboard)
     private void openAdminPane() {
         try {
+            // NOT: SceneHelper yerine manuel kodlar yazdım
             // FXML Dosyalarını Yükle (Kayıt ekranının FXML dosyasını yüklüyoruz)
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/admin.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.ADMIN));
             Parent parent = fxmlLoader.load();
 
             // Var olan sahneyi alıp ve değiştirmek ve
@@ -125,19 +147,7 @@ public class LoginController {
     @FXML
     private void switchToRegister(ActionEvent actionEvent) {
         try {
-            // FXML Dosyalarını Yükle (Kayıt ekranının FXML dosyasını yüklüyoruz)
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/register.fxml"));
-            Parent parent = fxmlLoader.load();
-
-            // Var olan sahneyi alıp ve değiştirmek
-            Stage stage = (Stage) ((javafx.scene.Node) actionEvent.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(parent));
-
-            // Pencere başlığını 'Kayıt Ol' olarak ayarlıyalım
-            stage.setTitle("Kayıt Ol");
-
-            // Sahneyi göster
-            stage.show();
+            SceneHelper.switchScene(FXMLPath.REGISTER, usernameField,"Kayıt Ol");
         } catch (Exception e) {
             //throw new RuntimeException(e);
             System.out.println(SpecialColor.RED + "Register Sayfasında yönlendirilmedi" + SpecialColor.RESET);

@@ -2,6 +2,9 @@ package com.hamitmizrak.ibb_ecodation_javafx.controller;
 
 import com.hamitmizrak.ibb_ecodation_javafx.dao.UserDAO;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.SceneHelper;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -67,39 +70,63 @@ public class RegisterController {
         }
     } // onEnterPressed
 
+    /// //////////////////////////////////////////////////////////////////////////////////////
+    // Validation (username=>0,email=>1,password=>2)
+    private void registerValidation(String... data) {
+        // Eğer inputlar null ise
+        if (data[0].isEmpty() || data[1].isEmpty() || data[2].isEmpty()) {
+            showAlert("Hata", "Lütfen Türm alanları doldurunuz", Alert.AlertType.ERROR);
+            return;
+        }
+
+        // Kullanıcı Adı sistemde varsa
+        if (userDAO.isUsernameExists(data[0])) {
+            showAlert("Hata", "Bu kullanıcı adı zaten sistemde kayıtlı", Alert.AlertType.ERROR);
+            return;
+        }
+
+        // Email sistemde varsa
+        if (userDAO.isUsernameExists(data[1])) {
+            showAlert("Hata", "Bu email zaten sistemde kayıtlı", Alert.AlertType.ERROR);
+            return;
+        }
+    }
 
     /// /////////////////////////////////////////////////////////////////////////////////////
     // Register ( Kullanıcı giriş işlemini gerçekleştiren metot)
     @FXML
     public void register() {
         // Kullanıcı Giriş Yaparken Username, Password Almak
-        String username, password,email;
-        username = usernameField.getText();
-        password = passwordField.getText();
-        email = emailField.getText();
+        String username, password, email;
+        username = usernameField.getText().trim();
+        password = passwordField.getText().trim();
+        email = emailField.getText().trim();
+
+        // Validation
+        registerValidation(username, email, password);
 
         // optionalUserDTO(Veri tabanına ekle)
-        Optional<UserDTO> optionalRegisterUserDTO = Optional.ofNullable(UserDTO.builder()
+        //Optional<UserDTO> optionalRegisterUserDTO = Optional.ofNullable(UserDTO.builder()
+        UserDTO userDTO = UserDTO.builder()
                 .id(0) // Create
                 .username(username)
                 .password(password)
                 .email(email)
-                .build());
+                .role(ERole.USER)
+                .build();
 
+        // Kayıt Yap
+        Optional<UserDTO> createdUser= userDAO.create(userDTO);
+        //  UserDTO userDTO = createdUser.get();
         // Eğer Veri Boş değilse
-        if (optionalRegisterUserDTO.isPresent()) {
-            // UserDTO Verisini almak
-            UserDTO userDTO = optionalRegisterUserDTO.get();
-
+        if (createdUser.isPresent()) {
             // Eğer başarılıysa Pop-up göster
             showAlert("Başarılı", "Kayıt Başarılı", Alert.AlertType.INFORMATION);
-
             // Kayıt başarılı ise Admin Panelkine geçiş sağla
             switchToLoginPane();
-
         } else {
             // Eğer bilgiler yanlışsa, database kayıt olmamışsa
-            showAlert("Başarılı", "Giriş Başarılı", Alert.AlertType.ERROR);
+            showAlert("Hata", "Kayıt Başarısız", Alert.AlertType.ERROR);
         }
     }
 
@@ -111,18 +138,7 @@ public class RegisterController {
     private void switchToLoginPane() {
         try {
             // FXML Dosyalarını Yükle (Kayıt ekranının FXML dosyasını yüklüyoruz)
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/login.fxml"));
-            Parent parent = fxmlLoader.load();
-
-            // Var olan sahneyi alıp ve değiştirmek
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(parent));
-
-            // Pencere başlığını 'Kayıt Ol' olarak ayarlıyalım
-            stage.setTitle("Giriş Yap");
-
-            // Sahneyi göster
-            stage.show();
+            SceneHelper.switchScene(FXMLPath.LOGIN, usernameField,"Giriş Yap");
         } catch (Exception e) {
             //throw new RuntimeException(e);
             System.out.println(SpecialColor.RED + "Login Sayfasında yönlendirilmedi" + SpecialColor.RESET);
