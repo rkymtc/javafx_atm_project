@@ -16,7 +16,7 @@ public interface IGenericsMethod<T> {
     // Generics ile Tek kayıt Döndüren Metot
     public Optional<T> selectSingle(String sql, Object... params);
 
-}
+} //end IGenericsMethod
 
 
 

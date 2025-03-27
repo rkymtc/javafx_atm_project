@@ -25,7 +25,7 @@ public class HelloApplication extends Application {
         // Caused by: java.lang.IllegalStateException: Location is not set.
         // Yukarıdaki hatanın anlamı sayfayı bulamıyor.
         /*
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/hello-view.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/home.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 320, 240);
         stage.setTitle("Hello!");
         stage.setScene(scene);
