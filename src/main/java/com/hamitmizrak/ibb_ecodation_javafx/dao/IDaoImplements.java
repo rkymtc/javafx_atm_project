@@ -4,7 +4,7 @@ import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnec
 
 import java.sql.Connection;
 
-public interface IDaoImplements<T> extends ICrud<T>,IGenericsMethod<T>,ILogin<T> {
+public interface IDaoImplements<T> extends ICrud<T>,IGenericsMethod<T> {
 
     // Gövdeli Method
     default Connection iDaoImplementsDatabaseConnection() {

@@ -20,9 +20,11 @@ public class UserDTO {
     private String email;
     private ERole role;
 
+
     // Parametresiz Constructor
     // Parametreli Constructor
-    public UserDTO(Integer id, String username, String password, String email,ERole role) {
+
+    public UserDTO(Integer id, String username, String password, String email, ERole role) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -46,5 +48,6 @@ public class UserDTO {
         System.out.println(userDTO);
     }
     */
+
 
 } //end Class

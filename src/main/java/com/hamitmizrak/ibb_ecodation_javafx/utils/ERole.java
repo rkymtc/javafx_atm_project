@@ -8,10 +8,8 @@ public enum ERole {
     MODERATOR("Moderatör"),
     ADMIN("Yönetici");
 
-    // Field
     private final String description;
 
-    // Parametreli
     ERole(String description) {
         this.description = description;
     }
@@ -30,4 +28,9 @@ public enum ERole {
             throw new RuntimeException("❌ Geçersiz rol: " + role);
         }
     }
-} //end ERole
+
+    @Override
+    public String toString() {
+        return description; // ComboBox’ta görünen metin
+    }
+}

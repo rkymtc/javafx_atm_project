@@ -36,11 +36,12 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // JDBC ile veritabanı bağlantısı kurabilmek için gerekli modül
     // Java'daki SQL işlemlerini (Connection, Statement, ResultSet vb.) gerçekleştirebilmek için gereklidir.
     requires java.sql;
-    requires jbcrypt;
     requires com.h2database;
+    requires jbcrypt;
     requires org.apache.poi.ooxml;
     requires org.apache.pdfbox;
     requires java.desktop;
+    requires java.mail;
     //requires eu.hansolo.tilesfx;
 
     // #######################################################################################

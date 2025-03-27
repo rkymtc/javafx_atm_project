@@ -1,9 +1,12 @@
 package com.hamitmizrak.ibb_ecodation_javafx.controller;
 
+import com.hamitmizrak.ibb_ecodation_javafx.dao.KdvDAO;
 import com.hamitmizrak.ibb_ecodation_javafx.dao.UserDAO;
+import com.hamitmizrak.ibb_ecodation_javafx.dto.KdvDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -12,6 +15,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.print.Printer;
 import javafx.print.PrinterJob;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -23,83 +27,117 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 
-// Admin Controller
 public class AdminController {
-    // Injection
-    // Veri tabanı işlemleri için)
-    private UserDAO userDAO;
 
-    // Parametresiz Constructor
+    private UserDAO userDAO;
+    private KdvDAO kdvDAO;
+
     public AdminController() {
         userDAO = new UserDAO();
+        kdvDAO = new KdvDAO();
     }
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    // Kullanıcı tablosunu ve Sutunlarını tanımlamak
-    // Dikkat: TableView => import javafx.scene.control.TableView;
+    // User İçin
     @FXML private TableView<UserDTO> userTable;
     @FXML private TableColumn<UserDTO, Integer> idColumn;
     @FXML private TableColumn<UserDTO, String> usernameColumn;
     @FXML private TableColumn<UserDTO, String> emailColumn;
     @FXML private TableColumn<UserDTO, String> passwordColumn;
     @FXML private TableColumn<UserDTO, String> roleColumn;
+    //@FXML private ComboBox<String> roleComboBox; //// Sayfa açılır açılmaz geliyor
     @FXML private TextField searchField;
-    @FXML
-    private ComboBox<ERole> filterRoleComboBox;
+    @FXML private ComboBox<ERole> filterRoleComboBox;
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// Admin sayfası açılırken hazır olsun
+    // KDV için
+    @FXML
+    private TableView<KdvDTO> kdvTable;
+    @FXML
+    private TableColumn<KdvDTO, Integer> idColumnKdv;
+    @FXML
+    private TableColumn<KdvDTO, Double> amountColumn;
+    @FXML
+    private TableColumn<KdvDTO, Double> kdvRateColumn;
+    @FXML
+    private TableColumn<KdvDTO, Double> kdvAmountColumn;
+    @FXML
+    private TableColumn<KdvDTO, Double> totalAmountColumn;
+    @FXML
+    private TableColumn<KdvDTO, String> receiptColumn;
+    @FXML
+    private TableColumn<KdvDTO, LocalDate> dateColumn;
+    @FXML
+    private TableColumn<KdvDTO, String> descColumn;
+    @FXML
+    private TextField searchKdvField;
+
+
     @FXML
     public void initialize() {
-        // Tablo sütunlarını UserDTO nesnesinin ilgili alanlarına bağlıyoruz
-        // Dikkat: buradaki id, username, email,password
+        // KULLANICI
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         emailColumn.setCellValueFactory(new PropertyValueFactory<>("email"));
         roleColumn.setCellValueFactory(new PropertyValueFactory<>("role"));
 
-        // Rol Filtreleme için ComboBox
-        filterRoleComboBox.getItems().add(null); // Boş seçenek: tüm roller
+        // Rol filtreleme için ComboBox
+        filterRoleComboBox.getItems().add(null); // boş seçenek: tüm roller
         filterRoleComboBox.getItems().addAll(ERole.values());
-        filterRoleComboBox.setValue(null); // Başlangıçtaki roller
+        filterRoleComboBox.setValue(null); // başlangıçta tüm roller
 
-        // Arama Kutusunu Dinleme(Listener)
-        searchField.textProperty().addListener((observable, oldValue,newValue) ->applyFilters());
-        filterRoleComboBox.valueProperty().addListener((observable, oldValue,newValue) ->applyFilters());
+        // Arama kutusu dinleme
+        searchField.textProperty().addListener((observable, oldVal, newVal) -> applyFilters());
+        filterRoleComboBox.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
 
-        // Şifre sütununu maskeleme özelliği ekleniyor
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
         passwordColumn.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String password, boolean empty) {
                 super.updateItem(password, empty);
-                if (empty || password == null) {
-                    setText(null);
-                } else {
-                    setText("******"); // Şifreleri gizlemek için yıldız işareti kullanılıyor
-                }
+                setText((empty || password == null) ? null : "******");
             }
         });
 
-        // Kullanıcı listesini tabloya yükleme
+        // Sayfa Açılır açılmaz geliyor
+        //roleComboBox.setItems(FXCollections.observableArrayList("USER", "ADMIN", "MODERATOR"));
+        //roleComboBox.getSelectionModel().select("USER");
         refreshTable();
+
+        // KDV İÇİN
+        // KDV tablosunu hazırla
+        idColumnKdv.setCellValueFactory(new PropertyValueFactory<>("id"));
+        amountColumn.setCellValueFactory(new PropertyValueFactory<>("amount"));
+        kdvRateColumn.setCellValueFactory(new PropertyValueFactory<>("kdvRate"));
+        kdvAmountColumn.setCellValueFactory(new PropertyValueFactory<>("kdvAmount"));
+        totalAmountColumn.setCellValueFactory(new PropertyValueFactory<>("totalAmount"));
+        receiptColumn.setCellValueFactory(new PropertyValueFactory<>("receiptNumber"));
+        dateColumn.setCellValueFactory(new PropertyValueFactory<>("transactionDate"));
+        descColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+
+        searchKdvField.textProperty().addListener((obs, oldVal, newVal) -> applyKdvFilter());
+
+        refreshKdvTable();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    /// applyFilters()
+    // KULLANICI
     private void applyFilters() {
         String keyword = searchField.getText().toLowerCase().trim();
         ERole selectedRole = filterRoleComboBox.getValue();
@@ -113,42 +151,48 @@ public class AdminController {
                             user.getUsername().toLowerCase().contains(keyword) ||
                             user.getEmail().toLowerCase().contains(keyword) ||
                             user.getRole().getDescription().toLowerCase().contains(keyword);
+
                     boolean matchesRole = (selectedRole == null) || user.getRole() == selectedRole;
+
                     return matchesKeyword && matchesRole;
                 })
                 .toList();
+
         userTable.setItems(FXCollections.observableArrayList(filteredList));
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    /// ClearFilters
     @FXML
     public void clearFilters() {
         searchField.clear();
         filterRoleComboBox.setValue(null);
     }
-    ///////////////////////////////////////////////////////////////////////////
-    // Kullanıcı listesini veritabanından alıp tabloyu günceller
+
+    @FXML
+    public void openKdvPane() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/kdv.fxml"));
+            Parent kdvRoot = loader.load();
+            Stage stage = new Stage();
+            stage.setTitle("KDV Paneli");
+            stage.setScene(new Scene(kdvRoot));
+            stage.show();
+        } catch (IOException e) {
+            showAlert("Hata", "KDV ekranı açılamadı!", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
+    }
+
+
     @FXML
     private void refreshTable() {
-        // Kullanıcı Listesini Optional olarak Al
-        Optional<List<UserDTO>> optionalUsers = userDAO.list(); // Kullanıcı listesini getir
-
-        // Optional al ve eğer boşsa bir liste kullan
-        List<UserDTO> userDTOList= optionalUsers.orElseGet(List::of);
-
-        // ObservableList Çevir
-        ObservableList<UserDTO> userObservableList= FXCollections.observableArrayList(userDTOList);
-
-        // Tabloyu Yükle
-        userTable.setItems(userObservableList);
-
-        // Show Alert
+        applyFilters();
+        Optional<List<UserDTO>> optionalUsers = userDAO.list();
+        List<UserDTO> userDTOList = optionalUsers.orElseGet(List::of);
+        ObservableList<UserDTO> observableList = FXCollections.observableArrayList(userDTOList);
+        userTable.setItems(observableList);
         showAlert("Bilgi", "Tablo başarıyla yenilendi!", Alert.AlertType.INFORMATION);
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Kullanıcıya mesaj göstermek için genel bir metod
     private void showAlert(String title, String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -156,17 +200,13 @@ public class AdminController {
         alert.showAndWait();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Kullanıcı oturumu kapatma işlemi
     @FXML
     private void logout() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Çıkış Yap");
         alert.setHeaderText("Oturumdan çıkmak istiyor musunuz?");
         alert.setContentText("Emin misiniz?");
-
         Optional<ButtonType> result = alert.showAndWait();
-        // Eğer kullanıcıdan OK gelmişse
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource(FXMLPath.LOGIN));
@@ -180,9 +220,6 @@ public class AdminController {
         }
     }
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// EXPORT
     @FXML
     public void printTable() {
         Printer printer = Printer.getDefaultPrinter();
@@ -202,76 +239,6 @@ public class AdminController {
             }
         }
     }
-
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// KDV CALCULATOR
-    private void showExportOptions(String content) {
-        ChoiceDialog<String> dialog = new ChoiceDialog<>("TXT", "TXT", "PDF", "EXCEL");
-        dialog.setTitle("Dışa Aktar");
-        dialog.setHeaderText("KDV sonucu hangi formatta kaydedilsin?");
-        dialog.setContentText("Format:");
-        dialog.showAndWait().ifPresent(choice -> {
-            switch (choice) {
-                case "TXT" -> exportAsTxt(content);
-                case "PDF" -> exportAsPdf(content);
-                case "EXCEL" -> exportAsExcel(content);
-            }
-        });
-    }
-
-    private void exportAsTxt(String content) {
-        try {
-            Path path = Paths.get(System.getProperty("user.home"), "Desktop",
-                    "kdv_" + System.currentTimeMillis() + ".txt");
-            Files.writeString(path, content);
-            showAlert("Başarılı", "TXT masaüstüne kaydedildi", Alert.AlertType.INFORMATION);
-        } catch (IOException e) {
-            showAlert("Hata", "TXT kaydedilemedi.", Alert.AlertType.ERROR);
-        }
-    }
-
-    private void exportAsPdf(String content) {
-        try (PDDocument doc = new PDDocument()) {
-            PDPage page = new PDPage(PDRectangle.A4);
-            doc.addPage(page);
-            PDPageContentStream stream = new PDPageContentStream(doc, page);
-            stream.beginText();
-            stream.setFont(PDType1Font.HELVETICA, 12);
-            stream.setLeading(14.5f);
-            stream.newLineAtOffset(50, 750);
-            for (String line : content.split("\n")) {
-                stream.showText(line); stream.newLine();
-            }
-            stream.endText(); stream.close();
-            File file = new File(System.getProperty("user.home") + "/Desktop/kdv_" + System.currentTimeMillis() + ".pdf");
-            doc.save(file);
-            showAlert("Başarılı", "PDF masaüstüne kaydedildi", Alert.AlertType.INFORMATION);
-        } catch (IOException e) {
-            showAlert("Hata", "PDF kaydedilemedi.", Alert.AlertType.ERROR);
-        }
-    }
-
-    private void exportAsExcel(String content) {
-        try (Workbook wb = new XSSFWorkbook()) {
-            Sheet sheet = wb.createSheet("KDV");
-            String[] lines = content.split("\n");
-            for (int i = 0; i < lines.length; i++) {
-                sheet.createRow(i).createCell(0).setCellValue(lines[i]);
-            }
-            File file = new File(System.getProperty("user.home") + "/Desktop/kdv_" + System.currentTimeMillis() + ".xlsx");
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                wb.write(fos);
-            }
-            showAlert("Başarılı", "Excel masaüstüne kaydedildi", Alert.AlertType.INFORMATION);
-        } catch (IOException e) {
-            showAlert("Hata", "Excel kaydedilemedi.", Alert.AlertType.ERROR);
-        }
-    }
-
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// HESAP MAKİNESİ(CALCULATOR)
 
     // Eğer uygulaman Linux/macOS'ta çalışabilir olacaksa, şu şekilde platform kontrolü de ekleyebilirsin:
     @FXML
@@ -293,10 +260,6 @@ public class AdminController {
         }
     }
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// KDV CALCULATOR
-    // KDV
     @FXML
     public void openKdvCalculator() {
         Dialog<Void> dialog = new Dialog<>();
@@ -305,8 +268,8 @@ public class AdminController {
 
         TextField amountField = new TextField();
         ComboBox<String> kdvBox = new ComboBox<>();
-        kdvBox.getItems().addAll("1%", "8%", "18%","20%", "Özel");
-        kdvBox.setValue("20%");
+        kdvBox.getItems().addAll("1%", "8%", "18%", "Özel");
+        kdvBox.setValue("18%");
         TextField customKdv = new TextField(); customKdv.setDisable(true);
         TextField receiptField = new TextField();
         DatePicker datePicker = new DatePicker();
@@ -338,7 +301,6 @@ public class AdminController {
                         case "1%" -> 1;
                         case "8%" -> 8;
                         case "18%" -> 18;
-                        case "20%" -> 20;
                         default -> Double.parseDouble(customKdv.getText());
                     };
                     double kdv = amount * rate / 100;
@@ -353,6 +315,7 @@ public class AdminController {
                             """,
                             receiptField.getText(), datePicker.getValue(),
                             amount, rate, kdv, total);
+
                     resultLabel.setText(result);
                     showExportOptions(result);
                 } catch (Exception e) {
@@ -365,9 +328,252 @@ public class AdminController {
         dialog.showAndWait();
     }
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// DIALOG (ADD)
+    private void showExportOptions(String content) {
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("TXT", "TXT", "PDF", "EXCEL", "MAIL");
+        dialog.setTitle("Dışa Aktar");
+        dialog.setHeaderText("KDV sonucu nasıl dışa aktarılsın?");
+        dialog.setContentText("Format:");
+        dialog.showAndWait().ifPresent(choice -> {
+            switch (choice) {
+                case "TXT" -> exportAsTxt(content);
+                case "PDF" -> exportAsPdf(content);
+                case "EXCEL" -> exportAsExcel(content);
+                case "MAIL" -> sendMail(content);
+            }
+        });
+    }
+
+    private void sendMail(String content) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("E-Posta Gönder");
+        dialog.setHeaderText("KDV sonucunu göndereceğiniz e-posta adresini girin:");
+        dialog.setContentText("E-posta:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(receiver -> {
+            String senderEmail = "seninmailin@gmail.com"; // değiştir
+            String senderPassword = "uygulama-sifresi"; // değiştir
+            String host = "smtp.gmail.com";
+            int port = 587;
+
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", host);
+            props.put("mail.smtp.port", port);
+
+            Session session = Session.getInstance(props, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(senderEmail, senderPassword);
+                }
+            });
+
+            try {
+                Message message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(senderEmail));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(receiver));
+                message.setSubject("KDV Hesaplama Sonucu");
+                message.setText(content);
+
+                Transport.send(message);
+
+                showAlert("Başarılı", "Mail başarıyla gönderildi!", Alert.AlertType.INFORMATION);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                showAlert("Hata", "Mail gönderilemedi.", Alert.AlertType.ERROR);
+            }
+        });
+    }
+
+
+    private void exportAsTxt(String content) {
+        try {
+            Path path = Paths.get(System.getProperty("user.home"), "Desktop",
+                    "kdv_" + System.currentTimeMillis() + ".txt");
+            Files.writeString(path, content);
+            showAlert("Başarılı", "TXT masaüstüne kaydedildi", Alert.AlertType.INFORMATION);
+        } catch (IOException e) {
+            showAlert("Hata", "TXT kaydedilemedi.", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void exportAsPdf(String content) {
+        try (PDDocument doc = new PDDocument()) {
+            PDPage page = new PDPage(PDRectangle.A4);
+            doc.addPage(page);
+            PDPageContentStream stream = new PDPageContentStream(doc, page);
+            stream.beginText();
+            stream.setFont(PDType1Font.HELVETICA, 12);
+            stream.setLeading(14.5f);
+            stream.newLineAtOffset(50, 750);
+
+            for (String line : content.split("\n")) {
+                String safeLine = line.replace("\t", "    ");
+                stream.showText(safeLine);
+                stream.newLine();
+            }
+
+            stream.endText();
+            stream.close();
+
+            File file = new File(System.getProperty("user.home") + "/Desktop/kdv_" + System.currentTimeMillis() + ".pdf");
+            doc.save(file);
+            showAlert("Başarılı", "PDF masaüstüne kaydedildi", Alert.AlertType.INFORMATION);
+        } catch (IOException e) {
+            showAlert("Hata", "PDF kaydedilemedi.", Alert.AlertType.ERROR);
+        }
+    }
+
+
+    private void exportAsExcel(String content) {
+        try (Workbook wb = new XSSFWorkbook()) {
+            Sheet sheet = wb.createSheet("KDV");
+
+            // Stil tanımı (isteğe bağlı)
+            var headerStyle = wb.createCellStyle();
+            var font = wb.createFont();
+            font.setBold(true);
+            headerStyle.setFont(font);
+
+            // Başlıkları yaz
+            Row header = sheet.createRow(0);
+            String[] headers = {"ID", "Tutar", "KDV Oranı", "KDV Tutarı", "Toplam", "Fiş No", "Tarih", "Açıklama"};
+            for (int i = 0; i < headers.length; i++) {
+                var cell = header.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // Satırları yaz
+            int rowNum = 1;
+            for (KdvDTO kdv : kdvTable.getItems()) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(kdv.getId());
+                row.createCell(1).setCellValue(kdv.getAmount());
+                row.createCell(2).setCellValue(kdv.getKdvRate());
+                row.createCell(3).setCellValue(kdv.getKdvAmount());
+                row.createCell(4).setCellValue(kdv.getTotalAmount());
+                row.createCell(5).setCellValue(kdv.getReceiptNumber());
+                row.createCell(6).setCellValue(String.valueOf(kdv.getTransactionDate()));
+                row.createCell(7).setCellValue(kdv.getDescription());
+            }
+
+            // Otomatik sütun genişliği ayarla
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            // Kaydet
+            File file = new File(System.getProperty("user.home") + "/Desktop/kdv_" + System.currentTimeMillis() + ".xlsx");
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                wb.write(fos);
+            }
+
+            showAlert("Başarılı", "Excel masaüstüne kaydedildi", Alert.AlertType.INFORMATION);
+        } catch (IOException e) {
+            showAlert("Hata", "Excel kaydedilemedi.", Alert.AlertType.ERROR);
+        }
+    }
+
+
+    @FXML
+    public void exportKdvAsTxt() {
+        exportAsTxt(generateKdvSummary());
+    }
+
+    @FXML
+    public void exportKdvAsPdf() {
+        exportAsPdf(generateKdvSummary());
+    }
+
+    @FXML
+    public void exportKdvAsExcel() {
+        exportAsExcel(generateKdvSummary());
+    }
+
+    @FXML
+    public void printKdvTable() {
+        // Kdv tablosunu yazdır
+        PrinterJob job = PrinterJob.createPrinterJob();
+        if (job != null && job.showPrintDialog(kdvTable.getScene().getWindow())) {
+            boolean success = job.printPage(kdvTable);
+            if (success) {
+                job.endJob();
+                showAlert("Yazdırma", "KDV tablosu yazdırıldı.", Alert.AlertType.INFORMATION);
+            } else {
+                showAlert("Hata", "Yazdırma başarısız.", Alert.AlertType.ERROR);
+            }
+        }
+    }
+
+    @FXML
+    public void sendKdvByMail() {
+        sendMail(generateKdvSummary());
+    }
+
+
+    private String generateKdvSummary() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("ID\tTutar\tKDV Oranı\tKDV Tutarı\tToplam\tFiş No\tTarih\tAçıklama\n");
+        for (KdvDTO kdv : kdvTable.getItems()) {
+            builder.append(String.format("%d\t%.2f\t%.2f%%\t%.2f\t%.2f\t%s\t%s\t%s\n",
+                    kdv.getId(),
+                    kdv.getAmount(),
+                    kdv.getKdvRate(),
+                    kdv.getKdvAmount(),
+                    kdv.getTotalAmount(),
+                    kdv.getReceiptNumber(),
+                    kdv.getTransactionDate(),
+                    kdv.getDescription()));
+        }
+        return builder.toString();
+    }
+
+
+    @FXML
+    private void handleNew() {
+        System.out.println("Yeni oluşturuluyor...");
+    }
+
+    @FXML
+    private void handleOpen() {
+        System.out.println("Dosya açılıyor...");
+    }
+
+    @FXML
+    private void handleExit() {
+        Platform.exit();
+    }
+
+    @FXML
+    private void goToUsers(ActionEvent event) throws IOException {
+        Parent root = FXMLLoader.load(getClass().getResource("/path/to/user.fxml"));
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setScene(new Scene(root));
+        stage.show();
+    }
+
+    @FXML
+    private void goToSettings(ActionEvent event) throws IOException {
+       /* Parent root = FXMLLoader.load(getClass().getResource("/path/to/settings.fxml"));
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setScene(new Scene(root));
+        stage.show();*/
+    }
+
+    @FXML
+    private void showAbout() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Hakkında");
+        alert.setHeaderText("Uygulama Bilgisi");
+        alert.setContentText("Bu uygulama JavaFX ile geliştirilmiştir.");
+        alert.showAndWait();
+    }
+
+
+
+
+    /// //////////////////////////////////////////////////////////
     private static class AddUserDialog extends Dialog<UserDTO> {
         private final TextField usernameField = new TextField();
         private final PasswordField passwordField = new PasswordField();
@@ -385,6 +591,7 @@ public class AdminController {
             ComboBox<ERole> roleComboBox = new ComboBox<>();
             roleComboBox.getItems().addAll(ERole.values());
             roleComboBox.setValue(ERole.USER); // Varsayılan seçim
+
 
             GridPane grid = new GridPane();
             grid.setHgap(10);
@@ -450,6 +657,8 @@ public class AdminController {
         });
     }
 
+
+
     @FXML
     public void addUserEski(ActionEvent actionEvent) {
         // Sayfa açılır açılmaz geliyor
@@ -510,9 +719,6 @@ public class AdminController {
         }
     }
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// DIALOG (UPDATE)
     private static class UpdateUserDialog extends Dialog<UserDTO> {
         private final TextField usernameField = new TextField();
         private final PasswordField passwordField = new PasswordField();
@@ -572,6 +778,7 @@ public class AdminController {
             });
         }
     }
+
 
     @FXML
     public void updateUserEski(ActionEvent actionEvent) {
@@ -648,9 +855,6 @@ public class AdminController {
     }
 
 
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// ////////////////////////////////////////////////////////////////////////////
-    /// DIALOG (DELETE)
     @FXML
     public void deleteUser(ActionEvent actionEvent) {
         Optional<UserDTO> selectedUser = Optional.ofNullable(userTable.getSelectionModel().getSelectedItem());
@@ -671,5 +875,125 @@ public class AdminController {
             }
         });
     }
-}
 
+    // KDV
+    // 📄 Listeyi yenile
+    private void refreshKdvTable() {
+        Optional<List<KdvDTO>> list = kdvDAO.list();
+        list.ifPresent(data -> kdvTable.setItems(FXCollections.observableArrayList(data)));
+    }
+
+    // 🔎 Arama filtreleme
+    private void applyKdvFilter() {
+        String keyword = searchKdvField.getText().trim().toLowerCase();
+        Optional<List<KdvDTO>> all = kdvDAO.list();
+        List<KdvDTO> filtered = all.orElse(List.of()).stream()
+                .filter(kdv -> kdv.getReceiptNumber().toLowerCase().contains(keyword))
+                .toList();
+        kdvTable.setItems(FXCollections.observableArrayList(filtered));
+    }
+
+    // ➕ KDV ekle
+    @FXML
+    public void addKdv() {
+        KdvDTO newKdv = showKdvForm(null);
+        if (newKdv != null && newKdv.isValid()) {
+            kdvDAO.create(newKdv);
+            refreshKdvTable();
+            showAlert("Başarılı", "KDV kaydı eklendi.", Alert.AlertType.INFORMATION);
+        }
+    }
+
+    // ✏️ KDV güncelle
+    @FXML
+    public void updateKdv() {
+        KdvDTO selected = kdvTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Uyarı", "Güncellenecek bir kayıt seçin.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        KdvDTO updated = showKdvForm(selected);
+        if (updated != null && updated.isValid()) {
+            kdvDAO.update(selected.getId(), updated);
+            refreshKdvTable();
+            showAlert("Başarılı", "KDV kaydı güncellendi.", Alert.AlertType.INFORMATION);
+        }
+    }
+
+    // ❌ KDV sil
+    @FXML
+    public void deleteKdv() {
+        KdvDTO selected = kdvTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Uyarı", "Silinecek bir kayıt seçin.", Alert.AlertType.WARNING);
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Silmek istiyor musunuz?", ButtonType.OK, ButtonType.CANCEL);
+        confirm.setHeaderText("Fiş: " + selected.getReceiptNumber());
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            kdvDAO.delete(selected.getId());
+            refreshKdvTable();
+            showAlert("Silindi", "KDV kaydı silindi.", Alert.AlertType.INFORMATION);
+        }
+    }
+
+    // 💬 Ortak form (ekle/güncelle)
+    private KdvDTO showKdvForm(KdvDTO existing) {
+        Dialog<KdvDTO> dialog = new Dialog<>();
+        dialog.setTitle(existing == null ? "Yeni KDV Ekle" : "KDV Güncelle");
+
+        TextField amountField = new TextField();
+        TextField rateField = new TextField();
+        TextField receiptField = new TextField();
+        DatePicker datePicker = new DatePicker(LocalDate.now());
+        TextField descField = new TextField();
+        ComboBox<String> exportCombo = new ComboBox<>();
+        exportCombo.getItems().addAll("TXT", "PDF", "EXCEL");
+        exportCombo.setValue("TXT");
+
+        if (existing != null) {
+            amountField.setText(String.valueOf(existing.getAmount()));
+            rateField.setText(String.valueOf(existing.getKdvRate()));
+            receiptField.setText(existing.getReceiptNumber());
+            datePicker.setValue(existing.getTransactionDate());
+            descField.setText(existing.getDescription());
+            exportCombo.setValue(existing.getExportFormat());
+        }
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10); grid.setVgap(10);
+        grid.addRow(0, new Label("Tutar:"), amountField);
+        grid.addRow(1, new Label("KDV Oranı (%):"), rateField);
+        grid.addRow(2, new Label("Fiş No:"), receiptField);
+        grid.addRow(3, new Label("Tarih:"), datePicker);
+        grid.addRow(4, new Label("Açıklama:"), descField);
+        grid.addRow(5, new Label("Format:"), exportCombo);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                try {
+                    return KdvDTO.builder()
+                            .amount(Double.parseDouble(amountField.getText()))
+                            .kdvRate(Double.parseDouble(rateField.getText()))
+                            .receiptNumber(receiptField.getText())
+                            .transactionDate(datePicker.getValue())
+                            .description(descField.getText())
+                            .exportFormat(exportCombo.getValue())
+                            .build();
+                } catch (Exception e) {
+                    showAlert("Hata", "Geçersiz veri!", Alert.AlertType.ERROR);
+                }
+            }
+            return null;
+        });
+
+        Optional<KdvDTO> result = dialog.showAndWait();
+        return result.orElse(null);
+    }
+}

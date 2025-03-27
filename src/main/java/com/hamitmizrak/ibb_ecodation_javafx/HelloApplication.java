@@ -1,8 +1,11 @@
 package com.hamitmizrak.ibb_ecodation_javafx;
 
-import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonDBConnection;
+// Eğer config.properties dosyasıyla çalışıyorsan yukarıdakini aşağıdakiyle değiştir:
+// import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
+
+// Test: usertable tablosunu oluştur ve örnek veri ekle
+
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
-import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,108 +15,91 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 public class HelloApplication extends Application {
 
-    // Proje Açıldığında İlk Açılacak Sayfa
     @Override
-    public void start(Stage stage) throws IOException {
-        // PROJE AYAĞA KALKALKEN DATABASE(H2DB) ÇALIŞSIN
-        initializeDatabase();
+    public void start(Stage stage) throws IOException, SQLException {
 
-        // Caused by: java.lang.IllegalStateException: Location is not set.
-        // Yukarıdaki hatanın anlamı sayfayı bulamıyor.
-        /*
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/home.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();
-         */
+        // Örnek Veri
+        dataSet();
 
-        // Başlangıçta Login Ekranı Gelsin
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/login.fxml"));
-        Parent parent= fxmlLoader.load();
+
+        // Başlangıç ekranı: Login
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/admin.fxml"));
+        Parent parent = fxmlLoader.load();
         stage.setTitle("Kullanıcı Yönetimi Login Sayfası");
         stage.setScene(new Scene(parent));
         stage.show();
     }
 
-    /// //////////////////////////////////////////////////////////////////////////
-    /// DATABASE
-    // Proje ayağa kalkarken veritabanından örnek veriler eklesin
-    // Database Başlangıçtaki değeri
-    private void initializeDatabase() {
-        try {
-            Connection conn = SingletonDBConnection.getInstance().getConnection(); // STATIC BAĞLANTI ALINDI
-            Statement stmt = conn.createStatement();
 
-            String createTableSQL = """
-                -- User login
-                CREATE TABLE IF NOT EXISTS usertable (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    username VARCHAR(50) NOT NULL UNIQUE,
-                    password VARCHAR(255) NOT NULL,
-                    email VARCHAR(100) NOT NULL UNIQUE,
-                    role VARCHAR(10) DEFAULT 'USER'
-                );
-                
-                -- Fişler Ekle
-                    CREATE TABLE receipts (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        receipt_number VARCHAR(50) NOT NULL UNIQUE,
-                        receipt_date DATE NOT NULL,
-                        tax_number VARCHAR(20) NOT NULL,
-                        company_name VARCHAR(100) NOT NULL,
-                        customer_name VARCHAR(100) NOT NULL,
-                        description TEXT,
-                        created_by VARCHAR(100) NOT NULL,
-                        account_code VARCHAR(50) NOT NULL,
-                     
-                        -- ENUM yerine CHECK constraint ile değerleri sınırlıyoruz
-                        receipt_type VARCHAR(20) NOT NULL CHECK (receipt_type IN ('Ödeme', 'Tahsilat', 'Masraf', 'Gelir')),
-                        amount DECIMAL(10,2) NOT NULL,
-                        vat_rate DECIMAL(5,2) NOT NULL,
-                        total_amount DECIMAL(10,2) NOT NULL,
-                    
-                        -- ENUM yerine CHECK constraint
-                        payment_type VARCHAR(20) NOT NULL CHECK (payment_type IN ('Nakit', 'Kredi Kartı', 'Havale', 'Çek')),
-                    
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                    );   
-                """;
-            stmt.execute(createTableSQL);
+    public static void dataSet() throws SQLException {
+        Connection connection = SingletonPropertiesDBConnection.getInstance().getConnection();
 
-            // Şifreleri hashle
-            String hashedPassword1 = BCrypt.hashpw("root", BCrypt.gensalt());
-            String hashedPassword2 = BCrypt.hashpw("root", BCrypt.gensalt());
+        // Tablo oluşturma
+        // Tablo oluşturma (usertable + kdv_table)
+        try (Statement stmt = connection.createStatement()) {
+            // Kullanıcı tablosu
+            String createUserTableSQL = """
+        CREATE TABLE IF NOT EXISTS usertable (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            email VARCHAR(100) NOT NULL UNIQUE,
+            role VARCHAR(50) DEFAULT 'USER'
+        );
+    """;
+            stmt.execute(createUserTableSQL);
 
-            // Örnek verileri hashlenmiş şekilde, rollerle birlikte ekle
-            String insertSQL1 = String.format("""
-            MERGE INTO usertable (username, password, email, role)
-            KEY(username) VALUES ('hamitmizrak', '%s', 'hamitmizrak@gmail.com', 'USER');
-        """, hashedPassword1);
-
-                String insertSQL2 = String.format("""
-            MERGE INTO usertable (username, password, email, role)
-            KEY(username) VALUES ('admin', '%s', 'admin@gmail.com', 'ADMIN');
-        """, hashedPassword2);
-
-            stmt.execute(insertSQL1);
-            stmt.execute(insertSQL2);
-
-            System.out.println("✅ BCrypt ile şifrelenmiş ve roller atanmış kullanıcılar başarıyla eklendi.");
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+            // KDV tablosu
+            String createKdvTableSQL = """
+        CREATE TABLE IF NOT EXISTS kdv_table (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            amount DOUBLE NOT NULL,
+            kdvRate DOUBLE NOT NULL,
+            kdvAmount DOUBLE NOT NULL,
+            totalAmount DOUBLE NOT NULL,
+            receiptNumber VARCHAR(100) NOT NULL,
+            transactionDate DATE NOT NULL,
+            description VARCHAR(255),
+            exportFormat VARCHAR(50)
+        );
+    """;
+            stmt.execute(createKdvTableSQL);
         }
-    }
 
-    /// //////////////////////////////////////////////////////////////////////////
-    /// PSVM
+
+        // Kullanıcı ekleme
+        String insertSQL = """
+            MERGE INTO usertable (username, password, email, role)
+            KEY(username) VALUES (?, ?, ?, ?);
+        """;
+
+        try (PreparedStatement ps = connection.prepareStatement(insertSQL)) {
+            // 1. kullanıcı
+            ps.setString(1, "hamitmizrak");
+            ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
+            ps.setString(3, "hamitmizrak@gmail.com");
+            ps.setString(4, "USER");
+            ps.executeUpdate();
+
+            // 2. kullanıcı
+            ps.setString(1, "admin");
+            //ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
+            ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
+            ps.setString(3, "root@gmail.com");
+            ps.setString(4, "ADMIN");
+            ps.executeUpdate();
+        }
+
+        System.out.println("✅ BCrypt ile şifrelenmiş ve roller atanmış kullanıcılar başarıyla eklendi.");
+    }
+    // Uygulama girişi
     public static void main(String[] args) {
         launch();
     }
-} //end HelloApplication
+}
