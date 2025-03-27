@@ -39,6 +39,7 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     requires org.apache.poi.poi;
     requires java.desktop;
     requires jbcrypt;
+    requires com.h2database;
     //requires eu.hansolo.tilesfx;
 
     // #######################################################################################
