@@ -29,7 +29,8 @@ public class HelloApplication extends Application {
 
 
         // Başlangıç ekranı: Login
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/admin.fxml"));
+        // view/admin.fxml
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/login.fxml"));
         Parent parent = fxmlLoader.load();
         stage.setTitle("Kullanıcı Yönetimi Login Sayfası");
         stage.setScene(new Scene(parent));
@@ -91,7 +92,15 @@ public class HelloApplication extends Application {
             ps.setString(1, "admin");
             //ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
             ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
-            ps.setString(3, "root@gmail.com");
+            ps.setString(3, "admin@gmail.com");
+            ps.setString(4, "ADMIN");
+            ps.executeUpdate();
+
+            // 3. kullanıcı
+            ps.setString(1, "root");
+            //ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
+            ps.setString(2, BCrypt.hashpw("root", BCrypt.gensalt()));
+            ps.setString(3, "root");
             ps.setString(4, "ADMIN");
             ps.executeUpdate();
         }

@@ -6,6 +6,9 @@ import com.hamitmizrak.ibb_ecodation_javafx.dto.KdvDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -22,6 +25,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -42,6 +46,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -89,9 +95,23 @@ public class AdminController {
     @FXML
     private TextField searchKdvField;
 
+    @FXML
+    private Label clockLabel;
+
 
     @FXML
     public void initialize() {
+        // Zaman
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(1), e -> {
+                    LocalDateTime now = LocalDateTime.now();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+                    clockLabel.setText(now.format(formatter));
+                })
+        );
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+
         // KULLANICI
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -996,4 +1016,36 @@ public class AdminController {
         Optional<KdvDTO> result = dialog.showAndWait();
         return result.orElse(null);
     }
+
+    // BİTİRME PROJESİ
+    @FXML
+    private void toggleTheme(ActionEvent event) {
+        // Tema değiştirme işlemleri burada yapılacak
+    }
+
+    @FXML
+    private void languageTheme(ActionEvent event) {
+        // Uygulamanın dili değiştirilecek (TR/EN vs.)
+    }
+
+    @FXML
+    private void showNotifications(ActionEvent event) {
+        // Bildirimleri gösteren popup veya panel açılacak
+    }
+
+    @FXML
+    private void showProfile(ActionEvent event) {
+        // Kullanıcı profil bilgileri gösterilecek pencere
+    }
+
+    @FXML
+    private void backupData(ActionEvent event) {
+        // Veritabanı yedekleme işlemleri burada yapılacak
+    }
+
+    @FXML
+    private void restoreData(ActionEvent event) {
+        // Daha önce alınmış bir yedek dosyadan veri geri yüklenecek
+    }
+
 }
