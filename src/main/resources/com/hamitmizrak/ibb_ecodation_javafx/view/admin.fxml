@@ -12,12 +12,15 @@
                 <Button text="🌙 Karanlık Mod" onAction="#toggleTheme" style="-fx-background-color: #2c3e50; -fx-text-fill: white; -fx-background-radius: 8;" />
                 <Button text="🌐 Dil" onAction="#languageTheme" style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 8;" />
                 <Button text="🔔 Bildirimler" onAction="#showNotifications" style="-fx-background-color: #e67e22; -fx-text-fill: white; -fx-background-radius: 8;" />
-                <Button text="👤 Profil" onAction="#showProfile" style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 8;" />
                 <Button text="💾 Yedekle" onAction="#backupData" style="-fx-background-color: #16a085; -fx-text-fill: white; -fx-background-radius: 8;" />
                 <Button text="🔁 Geri Yükle" onAction="#refreshTable" style="-fx-background-color: #f39c12; -fx-text-fill: white; -fx-background-radius: 8;" />
+
                 <Pane HBox.hgrow="ALWAYS" />
-                <Label text="👤 Admin" style="-fx-text-fill: white; -fx-font-size: 14px;" />
-                <Button text="Çıkış" onAction="#logout" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8;" />
+                <Button text="🪪 Not Defteri" onAction="#notebook" style="-fx-background-color: #139c12; -fx-text-fill: white; -fx-background-radius: 8;" />
+                <Pane HBox.hgrow="ALWAYS" />
+                <Button text="👤 Profil" onAction="#showProfile" style="-fx-background-color: #8e44ad; -fx-text-fill: white; -fx-background-radius: 8;" />
+
+                <Button text="🚦Çıkış" onAction="#logout" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 8;" />
                 <Label fx:id="clockLabel" style="-fx-text-fill: white;" />
             </HBox>
 
@@ -26,7 +29,7 @@
                     <Menu text="Dosya">
                         <MenuItem text="Çıkış" onAction="#logout" />
                     </Menu>
-                    <Menu text="İşlemler">
+                    <Menu text="Kullanıcı">
                         <MenuItem text="Kullanıcı Ekle" onAction="#addUser" />
                         <MenuItem text="Kullanıcı Güncelle" onAction="#updateUser" />
                         <MenuItem text="Kullanıcı Sil" onAction="#deleteUser" />
@@ -36,8 +39,9 @@
                         <MenuItem text="KDV Güncelle" onAction="#updateKdv" />
                         <MenuItem text="KDV Sil" onAction="#deleteKdv" />
                     </Menu>
-                <Menu text="Hesap Makinesi">
+                <Menu text="Diğer İşlemler">
                     <MenuItem text="Hesap Makinesi" onAction="#openCalculator" />
+                    <MenuItem text="Not Defteri" onAction="#notebook" />
                 </Menu>
                     <Menu text="Yardım">
                         <MenuItem text="Hakkında" onAction="#showAbout" />
@@ -73,9 +77,9 @@
                     <Button text="Ekle" onAction="#addUser" style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-background-radius: 8;" />
                     <Button text="Güncelle" onAction="#updateUser" style="-fx-background-color: #2980b9; -fx-text-fill: white; -fx-background-radius: 8;" />
                     <Button text="Sil" onAction="#deleteUser" style="-fx-background-color: #c0392b; -fx-text-fill: white; -fx-background-radius: 8;" />
+                    <Button text="Yazdır" onAction="#printTable" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 8;" />
                 </HBox>
                 <HBox spacing="10">
-                     <Button text="Yazdır" onAction="#printTable" style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-background-radius: 8;" />
                 </HBox>
             </VBox>
 

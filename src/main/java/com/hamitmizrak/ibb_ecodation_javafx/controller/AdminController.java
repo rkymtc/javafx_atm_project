@@ -1048,4 +1048,10 @@ public class AdminController {
         // Daha önce alınmış bir yedek dosyadan veri geri yüklenecek
     }
 
+
+    @FXML
+    private void notebook(ActionEvent event) {
+        // Daha önce alınmış bir yedek dosyadan veri geri yüklenecek
+    }
+
 }
