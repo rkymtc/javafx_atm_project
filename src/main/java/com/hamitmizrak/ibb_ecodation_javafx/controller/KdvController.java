@@ -134,10 +134,11 @@ public class KdvController {
         }
     }
 
-    private void showAlert(String title, String msg, Alert.AlertType type) {
+    private void showAlert(String titleKey, String messageKey, Alert.AlertType type) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setContentText(msg);
+        alert.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString(titleKey));
+        alert.setContentText(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString(messageKey));
+        com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager.styleDialog(alert);
         alert.showAndWait();
     }
 

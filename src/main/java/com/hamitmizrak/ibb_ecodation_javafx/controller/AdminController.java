@@ -240,10 +240,10 @@ public class AdminController {
         showAlert("Bilgi", "Tablo başarıyla yenilendi!", Alert.AlertType.INFORMATION);
     }
 
-    private void showAlert(String title, String message, Alert.AlertType type) {
+    private void showAlert(String titleKey, String messageKey, Alert.AlertType type) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setContentText(message);
+        alert.setTitle(LanguageManager.getString(titleKey));
+        alert.setContentText(LanguageManager.getString(messageKey));
         
         // Apply theme styling to dialog
         ThemeManager.styleDialog(alert);
@@ -254,9 +254,9 @@ public class AdminController {
     @FXML
     private void logout() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Çıkış Yap");
-        alert.setHeaderText("Oturumdan çıkmak istiyor musunuz?");
-        alert.setContentText("Emin misiniz?");
+        alert.setTitle(LanguageManager.getString("confirm.logout.title"));
+        alert.setHeaderText(LanguageManager.getString("confirm.logout.header"));
+        alert.setContentText(LanguageManager.getString("confirm.logout.content"));
         
         // Apply theme styling to dialog
         ThemeManager.styleDialog(alert);
@@ -264,7 +264,10 @@ public class AdminController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(FXMLPath.LOGIN));
+                FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource(FXMLPath.LOGIN),
+                    LanguageManager.getResourceBundle()
+                );
                 Parent root = loader.load();
                 Scene loginScene = new Scene(root);
                 ThemeManager.setTheme(loginScene, ThemeManager.isDarkTheme());
@@ -273,7 +276,7 @@ public class AdminController {
                 stage.setScene(loginScene);
                 stage.show();
             } catch (IOException e) {
-                showAlert("Hata", "Giriş sayfasına yönlendirme başarısız!", Alert.AlertType.ERROR);
+                showAlert("alert.error", "login.screen.load.error", Alert.AlertType.ERROR);
             }
         }
     }
@@ -991,17 +994,21 @@ public class AdminController {
         Optional<UserDTO> selectedUser = Optional.ofNullable(userTable.getSelectionModel().getSelectedItem());
         selectedUser.ifPresent(user -> {
             Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmationAlert.setTitle("Silme Onayı");
-            confirmationAlert.setHeaderText("Kullanıcıyı silmek istiyor musunuz?");
-            confirmationAlert.setContentText("Silinecek kullanıcı: " + user.getUsername());
+            confirmationAlert.setTitle(LanguageManager.getString("confirm.delete.title"));
+            confirmationAlert.setHeaderText(LanguageManager.getString("confirm.delete.header"));
+            confirmationAlert.setContentText(LanguageManager.getString("confirm.delete.content") + ": " + user.getUsername());
+            
+            // Apply theme styling to dialog
+            ThemeManager.styleDialog(confirmationAlert);
+            
             Optional<ButtonType> isDelete = confirmationAlert.showAndWait();
             if (isDelete.isPresent() && isDelete.get() == ButtonType.OK) {
                 Optional<UserDTO> deleteUser = userDAO.delete(user.getId());
                 if (deleteUser.isPresent()) {
-                    showAlert("Başarılı", "Kullanıcı başarıyla silindi", Alert.AlertType.INFORMATION);
+                    showAlert("alert.success", "user.delete.success", Alert.AlertType.INFORMATION);
                     refreshTable();
                 } else {
-                    showAlert("Başarısız", "Silme işlemi başarısız oldu", Alert.AlertType.ERROR);
+                    showAlert("alert.error", "user.delete.error", Alert.AlertType.ERROR);
                 }
             }
         });
@@ -1213,8 +1220,30 @@ public class AdminController {
         Button sourceButton = (Button) event.getSource();
         sourceButton.setText("🌐 " + (LanguageManager.isTurkish() ? "EN" : "TR"));
         
-        // Update UI elements with new language
-        updateUILanguage();
+        // Reload the scene with the new language bundle
+        try {
+            // Get current stage
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            
+            // Load FXML with current ResourceBundle
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/admin.fxml"),
+                LanguageManager.getResourceBundle()
+            );
+            
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            
+            // Apply current theme
+            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+            
+            stage.setScene(scene);
+            stage.setTitle(LanguageManager.getString("admin.title"));
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Hata", "Dil değişikliği uygulanırken bir hata oluştu.", Alert.AlertType.ERROR);
+        }
     }
     
     /**

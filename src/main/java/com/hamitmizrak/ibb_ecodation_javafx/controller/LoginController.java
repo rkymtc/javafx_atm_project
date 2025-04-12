@@ -64,10 +64,11 @@ public class LoginController {
         ThemeManager.toggleTheme(scene, themeToggleButton);
     }
 
-    private void showAlert(String title, String message, Alert.AlertType type) {
+    private void showAlert(String titleKey, String messageKey, Alert.AlertType type) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setContentText(message);
+        alert.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString(titleKey));
+        alert.setContentText(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString(messageKey));
+        ThemeManager.styleDialog(alert);
         alert.showAndWait();
     }
 
@@ -80,8 +81,6 @@ public class LoginController {
 
     @FXML
     public void login() {
-
-        //
         String username = usernameField.getText().trim();
         String password = passwordField.getText().trim();
 
@@ -89,55 +88,57 @@ public class LoginController {
 
         if (optionalLoginUserDTO.isPresent()) {
             UserDTO userDTO = optionalLoginUserDTO.get();
-            showAlert("Başarılı", "Giriş Başarılı: " + userDTO.getUsername(), Alert.AlertType.INFORMATION);
+            showAlert("alert.success", "login.success.message", Alert.AlertType.INFORMATION);
 
             if (userDTO.getRole() == ERole.ADMIN) {
                 openAdminPane();
             } else {
                 openUserHomePane();
             }
-
-
         } else {
-            showAlert("Başarısız", "Giriş bilgileri hatalı", Alert.AlertType.ERROR);
+            showAlert("alert.error", "login.error.message", Alert.AlertType.ERROR);
         }
     }
 
     private void openUserHomePane() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.USER_HOME));
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                getClass().getResource(FXMLPath.USER_HOME),
+                com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getResourceBundle()
+            );
             Parent parent = fxmlLoader.load();
             Scene scene = new Scene(parent);
             ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
             
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Kullanıcı Paneli");
+            stage.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString("user.panel.title"));
             stage.show();
         } catch (Exception e) {
             System.out.println(SpecialColor.RED + "Kullanıcı paneline yönlendirme başarısız" + SpecialColor.RESET);
             e.printStackTrace();
-            showAlert("Hata", "Kullanıcı ekranı yüklenemedi", Alert.AlertType.ERROR);
+            showAlert("alert.error", "user.panel.load.error", Alert.AlertType.ERROR);
         }
     }
 
-
-
     private void openAdminPane() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.ADMIN));
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                getClass().getResource(FXMLPath.ADMIN),
+                com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getResourceBundle()
+            );
             Parent parent = fxmlLoader.load();
             Scene scene = new Scene(parent);
             ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
             
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("Admin Panel");
+            stage.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString("admin.title"));
             stage.show();
         } catch (Exception e) {
             System.out.println(SpecialColor.RED + "Admin Sayfasına yönlendirme başarısız" + SpecialColor.RESET);
             e.printStackTrace();
-            showAlert("Hata", "Admin ekranı yüklenemedi", Alert.AlertType.ERROR);
+            showAlert("alert.error", "admin.panel.load.error", Alert.AlertType.ERROR);
         }
     }
 
@@ -145,11 +146,12 @@ public class LoginController {
     private void switchToRegister(ActionEvent actionEvent) {
         try {
             // Use SceneHelper to keep the theme consistent
-            SceneHelper.switchScene(FXMLPath.REGISTER, usernameField, "Kayıt Ol");
+            SceneHelper.switchScene(FXMLPath.REGISTER, usernameField, 
+                com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString("register.title"));
         } catch (Exception e) {
             System.out.println(SpecialColor.RED + "Register Sayfasına yönlendirme başarısız" + SpecialColor.RESET);
             e.printStackTrace();
-            showAlert("Hata", "Kayıt ekranı yüklenemedi", Alert.AlertType.ERROR);
+            showAlert("alert.error", "register.screen.load.error", Alert.AlertType.ERROR);
         }
     }
 }

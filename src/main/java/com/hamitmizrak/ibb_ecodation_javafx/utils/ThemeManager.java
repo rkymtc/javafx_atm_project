@@ -36,13 +36,13 @@ public class ThemeManager {
             // Switch to light theme
             scene.getStylesheets().add(Objects.requireNonNull(
                     ThemeManager.class.getResource(LIGHT_THEME)).toExternalForm());
-            themeButton.setText("🌙 Karanlık Mod");
+            themeButton.setText(LanguageManager.getString("admin.theme.dark"));
             isDarkTheme = false;
         } else {
             // Switch to dark theme
             scene.getStylesheets().add(Objects.requireNonNull(
                     ThemeManager.class.getResource(DARK_THEME)).toExternalForm());
-            themeButton.setText("☀️ Aydınlık Mod");
+            themeButton.setText(LanguageManager.getString("admin.theme.light"));
             isDarkTheme = true;
         }
     }

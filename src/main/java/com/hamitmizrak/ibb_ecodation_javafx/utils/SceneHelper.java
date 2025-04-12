@@ -14,7 +14,10 @@ public class SceneHelper {
 
     public static void switchScene(String fxmlPath, Node currentNode, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(SceneHelper.class.getResource(fxmlPath));
+            FXMLLoader loader = new FXMLLoader(
+                SceneHelper.class.getResource(fxmlPath),
+                LanguageManager.getResourceBundle()
+            );
             Parent root = loader.load();
             Stage stage = (Stage) currentNode.getScene().getWindow();
             Scene scene = new Scene(root);
@@ -31,14 +34,15 @@ public class SceneHelper {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
-            showError("FXML Yüklenemedi", "Dosya yolu: " + fxmlPath);
+            showError("fxml.load.error", LanguageManager.getString("file.path") + ": " + fxmlPath);
         }
     }
 
-    private static void showError(String title, String message) {
+    private static void showError(String titleKey, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Hata: " + title);
+        alert.setTitle(LanguageManager.getString("alert.error") + ": " + LanguageManager.getString(titleKey));
         alert.setContentText(message);
+        ThemeManager.styleDialog(alert);
         alert.showAndWait();
     }
 }

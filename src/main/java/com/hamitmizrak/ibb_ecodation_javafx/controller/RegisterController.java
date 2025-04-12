@@ -65,10 +65,11 @@ public class RegisterController {
         ThemeManager.toggleTheme(scene, themeToggleButton);
     }
 
-    private void showAlert(String title, String message, Alert.AlertType type) {
+    private void showAlert(String titleKey, String messageKey, Alert.AlertType type) {
         Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setContentText(message);
+        alert.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString(titleKey));
+        alert.setContentText(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString(messageKey));
+        com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager.styleDialog(alert);
         alert.showAndWait();
     }
 
@@ -86,19 +87,19 @@ public class RegisterController {
         String email = emailField.getText().trim();
 
         if (username.isEmpty() || password.isEmpty() || email.isEmpty()) {
-            showAlert("Hata", "Lütfen tüm alanları doldurun", Alert.AlertType.ERROR);
+            showAlert("alert.error", "register.empty.fields", Alert.AlertType.ERROR);
             return;
         }
 
         // Kullanıcı adı kontrolü
         if (userDAO.isUsernameExists(username)) {
-            showAlert("Hata", "Bu kullanıcı adı zaten kayıtlı!", Alert.AlertType.WARNING);
+            showAlert("alert.warning", "register.username.exists", Alert.AlertType.WARNING);
             return;
         }
 
         // Email kontrolü
         if (userDAO.isEmailExists(email)) {
-            showAlert("Hata", "Bu e-posta adresi zaten kayıtlı!", Alert.AlertType.WARNING);
+            showAlert("alert.warning", "register.email.exists", Alert.AlertType.WARNING);
             return;
         }
 
@@ -111,23 +112,23 @@ public class RegisterController {
 
         Optional<UserDTO> createdUser = userDAO.create(userDTO);
         if (createdUser.isPresent()) {
-            showAlert("Başarılı", "Kayıt başarılı", Alert.AlertType.INFORMATION);
+            showAlert("alert.success", "register.success.message", Alert.AlertType.INFORMATION);
             switchToLogin();
         } else {
-            showAlert("Hata", "Kayıt başarısız oldu", Alert.AlertType.ERROR);
+            showAlert("alert.error", "register.error.message", Alert.AlertType.ERROR);
         }
     }
-
 
     @FXML
     private void switchToLogin() {
         try {
             // Use SceneHelper to maintain theme consistency
-            SceneHelper.switchScene(FXMLPath.LOGIN, usernameField, "Giriş Yap");
+            SceneHelper.switchScene(FXMLPath.LOGIN, usernameField, 
+                com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString("login.title"));
         } catch (Exception e) {
             System.out.println(SpecialColor.RED + "Login Sayfasına yönlendirme başarısız" + SpecialColor.RESET);
             e.printStackTrace();
-            showAlert("Hata", "Login ekranı yüklenemedi", Alert.AlertType.ERROR);
+            showAlert("alert.error", "login.screen.load.error", Alert.AlertType.ERROR);
         }
     }
 }

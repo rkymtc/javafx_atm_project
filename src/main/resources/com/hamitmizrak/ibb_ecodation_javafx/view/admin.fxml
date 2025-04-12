@@ -8,43 +8,43 @@
     <top>
         <VBox>
             <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header-box" style="-fx-padding: 10;">
-                <Label text="🔧 Yönetim Paneli" styleClass="title-label" />
-                <Button fx:id="themeButton" text="🌙 Karanlık Mod" onAction="#toggleTheme" />
-                <Button fx:id="languageButton" text="🌐 Dil" onAction="#languageTheme" />
-                <Button text="🔔 Bildirimler" onAction="#showNotifications" />
-                <Button text="💾 Yedekle" onAction="#backupData" />
-                <Button text="🔁 Geri Yükle" onAction="#refreshTable" />
+                <Label text="%admin.title" styleClass="title-label" />
+                <Button fx:id="themeButton" text="%admin.theme.dark" onAction="#toggleTheme" />
+                <Button fx:id="languageButton" text="%admin.language" onAction="#languageTheme" />
+                <Button text="%admin.notifications" onAction="#showNotifications" />
+                <Button text="%admin.backup" onAction="#backupData" />
+                <Button text="%admin.refresh" onAction="#refreshTable" />
 
                 <Pane HBox.hgrow="ALWAYS" />
-                <Button text="🪪 Not Defteri" onAction="#notebook" />
+                <Button text="%admin.notebook" onAction="#notebook" />
                 <Pane HBox.hgrow="ALWAYS" />
-                <Button text="👤 Profil" onAction="#showProfile" />
+                <Button text="%admin.profile" onAction="#showProfile" />
 
-                <Button text="🚦Çıkış" onAction="#logout" styleClass="secondary-button" />
+                <Button text="%admin.logout" onAction="#logout" styleClass="secondary-button" />
                 <Label fx:id="clockLabel" />
             </HBox>
 
             <MenuBar fx:id="menuBar">
             <menus>
-                    <Menu text="Dosya">
-                        <MenuItem text="Çıkış" onAction="#logout" />
+                    <Menu text="%menu.file">
+                        <MenuItem text="%menu.file.exit" onAction="#logout" />
                     </Menu>
-                    <Menu text="Kullanıcı">
-                        <MenuItem text="Kullanıcı Ekle" onAction="#addUser" />
-                        <MenuItem text="Kullanıcı Güncelle" onAction="#updateUser" />
-                        <MenuItem text="Kullanıcı Sil" onAction="#deleteUser" />
+                    <Menu text="%menu.user">
+                        <MenuItem text="%menu.user.add" onAction="#addUser" />
+                        <MenuItem text="%menu.user.update" onAction="#updateUser" />
+                        <MenuItem text="%menu.user.delete" onAction="#deleteUser" />
                     </Menu>
-                    <Menu text="KDV İşlemleri">
-                        <MenuItem text="KDV Ekle" onAction="#addKdv" />
-                        <MenuItem text="KDV Güncelle" onAction="#updateKdv" />
-                        <MenuItem text="KDV Sil" onAction="#deleteKdv" />
+                    <Menu text="%menu.kdv">
+                        <MenuItem text="%menu.kdv.add" onAction="#addKdv" />
+                        <MenuItem text="%menu.kdv.update" onAction="#updateKdv" />
+                        <MenuItem text="%menu.kdv.delete" onAction="#deleteKdv" />
                     </Menu>
-                <Menu text="Diğer İşlemler">
-                    <MenuItem text="Hesap Makinesi" onAction="#openCalculator" />
-                    <MenuItem text="Not Defteri" onAction="#notebook" />
+                <Menu text="%menu.other">
+                    <MenuItem text="%menu.other.calculator" onAction="#openCalculator" />
+                    <MenuItem text="%menu.other.notebook" onAction="#notebook" />
                 </Menu>
-                    <Menu text="Yardım">
-                        <MenuItem text="Hakkında" onAction="#showAbout" />
+                    <Menu text="%menu.help">
+                        <MenuItem text="%menu.help.about" onAction="#showAbout" />
                     </Menu>
                 </menus>
             </MenuBar>
@@ -57,27 +57,27 @@
 
             <!-- SOL PANEL (Kullanıcı Yönetimi) -->
             <VBox spacing="20" styleClass="panel-container" style="-fx-padding: 30;">
-                <Label text="👤 Kullanıcı Yönetimi" styleClass="section-title" />
-                <TextField fx:id="searchField" promptText="Kullanıcı adı, e-posta veya rol ara..."
+                <Label text="%user.management" styleClass="section-title" />
+                <TextField fx:id="searchField" promptText="%user.search"
                            styleClass="input-field" />
-                <ComboBox fx:id="filterRoleComboBox" promptText="Rol filtrele"
+                <ComboBox fx:id="filterRoleComboBox" promptText="%user.filter.role"
                           styleClass="input-field" />
 
                 <TableView fx:id="userTable" prefHeight="300">
                     <columns>
-                        <TableColumn fx:id="idColumn" text="ID" prefWidth="40" />
-                        <TableColumn fx:id="usernameColumn" text="Kullanıcı Adı" prefWidth="150" />
-                        <TableColumn fx:id="emailColumn" text="E-Posta" prefWidth="180" />
-                        <TableColumn fx:id="passwordColumn" text="Şifre" prefWidth="100" />
-                        <TableColumn fx:id="roleColumn" text="Rol" prefWidth="80" />
+                        <TableColumn fx:id="idColumn" text="%user.id" prefWidth="40" />
+                        <TableColumn fx:id="usernameColumn" text="%user.username" prefWidth="150" />
+                        <TableColumn fx:id="emailColumn" text="%user.email" prefWidth="180" />
+                        <TableColumn fx:id="passwordColumn" text="%user.password" prefWidth="100" />
+                        <TableColumn fx:id="roleColumn" text="%user.role" prefWidth="80" />
                     </columns>
                 </TableView>
 
                 <HBox spacing="10">
-                    <Button text="Ekle" onAction="#addUser" styleClass="primary-button" />
-                    <Button text="Güncelle" onAction="#updateUser" styleClass="primary-button" />
-                    <Button text="Sil" onAction="#deleteUser" styleClass="secondary-button" />
-                    <Button text="Yazdır" onAction="#printTable" styleClass="secondary-button" />
+                    <Button text="%user.add" onAction="#addUser" styleClass="primary-button" />
+                    <Button text="%user.update" onAction="#updateUser" styleClass="primary-button" />
+                    <Button text="%user.delete" onAction="#deleteUser" styleClass="secondary-button" />
+                    <Button text="%user.print" onAction="#printTable" styleClass="secondary-button" />
                 </HBox>
                 <HBox spacing="10">
                 </HBox>
@@ -85,42 +85,42 @@
 
             <!-- SAĞ PANEL (KDV) -->
             <VBox spacing="15" styleClass="panel-container" style="-fx-padding: 30;">
-                <Label text="📊 KDV Hesaplama" styleClass="section-title" />
-                <TextField fx:id="searchKdvField" promptText="Fiş numarası ara..."
+                <Label text="%kdv.management" styleClass="section-title" />
+                <TextField fx:id="searchKdvField" promptText="%kdv.search"
                            styleClass="input-field" />
 
                 <TableView fx:id="kdvTable" prefHeight="300">
                     <columns>
-                        <TableColumn fx:id="idColumnKdv" text="ID" prefWidth="40" />
-                        <TableColumn fx:id="amountColumn" text="Tutar" prefWidth="80" />
-                        <TableColumn fx:id="kdvRateColumn" text="KDV (%)" prefWidth="80" />
-                        <TableColumn fx:id="kdvAmountColumn" text="KDV Tutarı" prefWidth="90" />
-                        <TableColumn fx:id="totalAmountColumn" text="Toplam" prefWidth="90" />
-                        <TableColumn fx:id="receiptColumn" text="Fiş No" prefWidth="90" />
-                        <TableColumn fx:id="dateColumn" text="Tarih" prefWidth="100" />
-                        <TableColumn fx:id="descColumn" text="Açıklama" prefWidth="150" />
+                        <TableColumn fx:id="idColumnKdv" text="%kdv.id" prefWidth="40" />
+                        <TableColumn fx:id="amountColumn" text="%kdv.amount" prefWidth="80" />
+                        <TableColumn fx:id="kdvRateColumn" text="%kdv.rate" prefWidth="80" />
+                        <TableColumn fx:id="kdvAmountColumn" text="%kdv.kdv.amount" prefWidth="90" />
+                        <TableColumn fx:id="totalAmountColumn" text="%kdv.total" prefWidth="90" />
+                        <TableColumn fx:id="receiptColumn" text="%kdv.receipt" prefWidth="90" />
+                        <TableColumn fx:id="dateColumn" text="%kdv.date" prefWidth="100" />
+                        <TableColumn fx:id="descColumn" text="%kdv.description" prefWidth="150" />
                     </columns>
                 </TableView>
 
                 <HBox spacing="10" alignment="CENTER">
-                    <Button text="KDV Ekle" onAction="#addKdv" styleClass="primary-button" />
-                    <Button text="Güncelle" onAction="#updateKdv" styleClass="primary-button" />
-                    <Button text="Sil" onAction="#deleteKdv" styleClass="secondary-button" />
+                    <Button text="%kdv.add" onAction="#addKdv" styleClass="primary-button" />
+                    <Button text="%kdv.update" onAction="#updateKdv" styleClass="primary-button" />
+                    <Button text="%kdv.delete" onAction="#deleteKdv" styleClass="secondary-button" />
                 </HBox>
 
                 <HBox spacing="10" alignment="CENTER">
-                    <Button fx:id="btnKdvExportTxt" text="TXT'ye Aktar" onAction="#exportKdvAsTxt"
+                    <Button fx:id="btnKdvExportTxt" text="%kdv.export.txt" onAction="#exportKdvAsTxt"
                             styleClass="secondary-button" />
-                    <Button fx:id="btnKdvExportPdf" text="PDF'e Aktar" onAction="#exportKdvAsPdf"
+                    <Button fx:id="btnKdvExportPdf" text="%kdv.export.pdf" onAction="#exportKdvAsPdf"
                             styleClass="secondary-button" />
-                    <Button fx:id="btnKdvExportExcel" text="Excel'e Aktar" onAction="#exportKdvAsExcel"
+                    <Button fx:id="btnKdvExportExcel" text="%kdv.export.excel" onAction="#exportKdvAsExcel"
                             styleClass="secondary-button" />
                 </HBox>
 
                 <HBox spacing="10" alignment="CENTER">
-                     <Button fx:id="btnKdvPrint" text="Yazdır" onAction="#printKdvTable"
+                     <Button fx:id="btnKdvPrint" text="%kdv.print" onAction="#printKdvTable"
                             styleClass="secondary-button" />
-                    <Button fx:id="btnKdvMail" text="Mail Gönder" onAction="#sendKdvByMail"
+                    <Button fx:id="btnKdvMail" text="%kdv.mail" onAction="#sendKdvByMail"
                             styleClass="secondary-button" />
                 </HBox>
             </VBox>
@@ -130,7 +130,7 @@
     <!-- FOOTER -->
     <bottom>
         <HBox alignment="CENTER" styleClass="footer" style="-fx-padding: 12;">
-            <Label text="© 2025 MSC HAMİT MIZRAK Teknoloji | Kullanıcı ve KDV Yönetimi Sistemi" styleClass="footer-label" style="-fx-font-size: 13px;" />
+            <Label text="%footer.copyright" styleClass="footer-label" style="-fx-font-size: 13px;" />
         </HBox>
     </bottom>
 

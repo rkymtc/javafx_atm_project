@@ -35,14 +35,18 @@ public class HelloApplication extends Application {
 
         // Başlangıç ekranı: Login
         // view/admin.fxml
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("view/login.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(
+            HelloApplication.class.getResource("view/login.fxml"),
+            LanguageManager.getResourceBundle()
+        );
+        
         Parent parent = fxmlLoader.load();
         Scene scene = new Scene(parent);
         
         // Apply default theme (light theme)
         ThemeManager.setTheme(scene, false);
         
-        stage.setTitle("Kullanıcı Yönetimi Login Sayfası");
+        stage.setTitle(LanguageManager.getString("admin.title"));
         stage.setScene(scene);
         stage.show();
     }

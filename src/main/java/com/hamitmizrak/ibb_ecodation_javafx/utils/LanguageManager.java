@@ -5,8 +5,8 @@ import java.util.ResourceBundle;
 
 public class LanguageManager {
     
-    // Constants for language resources
-    public static final String RESOURCE_BUNDLE_BASE_NAME = "com.hamitmizrak.ibb_ecodation_javafx.lang.messages";
+    // Base name for the resource bundle
+    private static final String RESOURCE_BUNDLE_BASE_NAME = "lang.messages";
     
     // Default locale is Turkish
     private static Locale currentLocale = new Locale("tr", "TR");
@@ -37,15 +37,16 @@ public class LanguageManager {
     }
     
     /**
-     * Get a localized string from the resources
-     * @param key The resource key
+     * Get a localized string from the resource bundle
+     * @param key The key in the resource bundle
      * @return The localized string
      */
     public static String getString(String key) {
         try {
             return resourceBundle.getString(key);
         } catch (Exception e) {
-            return key; // Return the key as fallback
+            // Return the key itself if not found
+            return key;
         }
     }
     
@@ -58,10 +59,18 @@ public class LanguageManager {
     }
     
     /**
-     * Check if the current language is Turkish
-     * @return True if Turkish, false if other language
+     * Check if current language is Turkish
+     * @return true if Turkish, false otherwise
      */
     public static boolean isTurkish() {
         return currentLocale.getLanguage().equals("tr");
+    }
+    
+    /**
+     * Get the current ResourceBundle
+     * @return The current ResourceBundle
+     */
+    public static ResourceBundle getResourceBundle() {
+        return resourceBundle;
     }
 } 

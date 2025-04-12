@@ -18,26 +18,26 @@
     <!--stylesheets="@css/styles.css"-->
 
     <HBox alignment="CENTER_RIGHT" spacing="10">
-        <Button fx:id="themeToggleButton" text="🌙 Karanlık Mod" onAction="#toggleTheme" />
+        <Button fx:id="themeToggleButton" text="%admin.theme.dark" onAction="#toggleTheme" />
     </HBox>
 
-    <Label text="Kullanıcı Girişi"
+    <Label text="%login.title"
            styleClass="title-label" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
 
     <TextField fx:id="usernameField"
-               promptText="Kullanıcı Adı / Email"
+               promptText="%login.username.prompt"
                styleClass="input-field" style="-fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10;" />
 
     <PasswordField fx:id="passwordField"
-                   promptText="Şifre"
+                   promptText="%login.password.prompt"
                    styleClass="input-field" style="-fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10;" />
 
     <Button
-            text="Giriş Yap"
+            text="%login.button"
             onAction="#login"
             styleClass="primary-button" style="-fx-font-size: 18px;"/>
     <Button
-            text="Kayıt Yap"
+            text="%register.button"
             onAction="#switchToRegister"
             styleClass="secondary-button" style="-fx-font-size: 18px;"/>
 
