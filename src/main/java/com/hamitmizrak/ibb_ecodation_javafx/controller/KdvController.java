@@ -2,10 +2,11 @@ package com.hamitmizrak.ibb_ecodation_javafx.controller;
 
 import com.hamitmizrak.ibb_ecodation_javafx.dao.KdvDAO;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.KdvDTO;
-import javafx.beans.property.SimpleObjectProperty;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
@@ -28,6 +29,7 @@ public class KdvController {
     @FXML private TableColumn<KdvDTO, LocalDate> dateColumn;
     @FXML private TableColumn<KdvDTO, String> descColumn;
     @FXML private TextField searchField;
+    @FXML private Button themeToggleButton;
 
     @FXML
     public void initialize() {
@@ -42,6 +44,32 @@ public class KdvController {
 
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilter());
         refreshTable();
+        
+        // Apply current theme
+        if (kdvTable.getScene() != null) {
+            ThemeManager.setTheme(kdvTable.getScene(), ThemeManager.isDarkTheme());
+            updateThemeButton();
+        } else {
+            // Scene might not be ready yet, we need to wait
+            kdvTable.sceneProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    ThemeManager.setTheme(newValue, ThemeManager.isDarkTheme());
+                    updateThemeButton();
+                }
+            });
+        }
+    }
+    
+    private void updateThemeButton() {
+        if (themeToggleButton != null) {
+            themeToggleButton.setText(ThemeManager.isDarkTheme() ? "☀️ Aydınlık Mod" : "🌙 Karanlık Mod");
+        }
+    }
+    
+    @FXML
+    private void toggleTheme() {
+        Scene scene = themeToggleButton.getScene();
+        ThemeManager.toggleTheme(scene, themeToggleButton);
     }
 
     public void refreshTable() {
@@ -126,6 +154,14 @@ public class KdvController {
         exportCombo.getItems().addAll("TXT", "PDF", "EXCEL");
         exportCombo.setValue("TXT");
 
+        // Add style classes to form elements
+        amountField.getStyleClass().add("input-field");
+        rateField.getStyleClass().add("input-field");
+        receiptField.getStyleClass().add("input-field");
+        datePicker.getStyleClass().add("input-field");
+        descField.getStyleClass().add("input-field");
+        exportCombo.getStyleClass().add("input-field");
+
         if (existing != null) {
             amountField.setText(String.valueOf(existing.getAmount()));
             rateField.setText(String.valueOf(existing.getKdvRate()));
@@ -144,8 +180,24 @@ public class KdvController {
         grid.addRow(4, new Label("Açıklama:"), descField);
         grid.addRow(5, new Label("Format:"), exportCombo);
 
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        // Apply the current theme to the dialog
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStyleClass().add("theme-dialog");
+        Scene scene = dialogPane.getScene();
+        
+        if (scene != null) {
+            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+        }
+
+        dialogPane.setContent(grid);
+        dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        // Add style classes to buttons
+        Button okButton = (Button) dialogPane.lookupButton(ButtonType.OK);
+        Button cancelButton = (Button) dialogPane.lookupButton(ButtonType.CANCEL);
+        
+        if (okButton != null) okButton.getStyleClass().add("primary-button");
+        if (cancelButton != null) cancelButton.getStyleClass().add("secondary-button");
 
         dialog.setResultConverter(btn -> {
             if (btn == ButtonType.OK) {

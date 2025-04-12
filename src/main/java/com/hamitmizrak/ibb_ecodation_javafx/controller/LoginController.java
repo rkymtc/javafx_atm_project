@@ -6,12 +6,14 @@ import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SceneHelper;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -30,6 +32,37 @@ public class LoginController {
     private TextField usernameField;
     @FXML
     private TextField passwordField;
+    @FXML
+    private Button themeToggleButton;
+    
+    @FXML
+    public void initialize() {
+        // Apply default theme
+        if (usernameField.getScene() != null) {
+            ThemeManager.setTheme(usernameField.getScene(), false); // Light theme by default
+            updateThemeButton();
+        } else {
+            // Scene might not be ready yet, we need to wait until the scene is ready
+            usernameField.sceneProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    ThemeManager.setTheme(newValue, ThemeManager.isDarkTheme());
+                    updateThemeButton();
+                }
+            });
+        }
+    }
+    
+    private void updateThemeButton() {
+        if (themeToggleButton != null) {
+            themeToggleButton.setText(ThemeManager.isDarkTheme() ? "☀️ Aydınlık Mod" : "🌙 Karanlık Mod");
+        }
+    }
+    
+    @FXML
+    private void toggleTheme() {
+        Scene scene = themeToggleButton.getScene();
+        ThemeManager.toggleTheme(scene, themeToggleButton);
+    }
 
     private void showAlert(String title, String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
@@ -74,8 +107,11 @@ public class LoginController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.USER_HOME));
             Parent parent = fxmlLoader.load();
+            Scene scene = new Scene(parent);
+            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+            
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(parent));
+            stage.setScene(scene);
             stage.setTitle("Kullanıcı Paneli");
             stage.show();
         } catch (Exception e) {
@@ -91,9 +127,11 @@ public class LoginController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.ADMIN));
             Parent parent = fxmlLoader.load();
-
+            Scene scene = new Scene(parent);
+            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+            
             Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(parent));
+            stage.setScene(scene);
             stage.setTitle("Admin Panel");
             stage.show();
         } catch (Exception e) {
@@ -106,16 +144,7 @@ public class LoginController {
     @FXML
     private void switchToRegister(ActionEvent actionEvent) {
         try {
-            // 1.YOL
-            /*
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.REGISTER));
-            Parent parent = fxmlLoader.load();
-            Stage stage = (Stage) ((javafx.scene.Node) actionEvent.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(parent));
-            stage.setTitle("Kayıt Ol");
-            stage.show();
-             */
-            // 2.YOL
+            // Use SceneHelper to keep the theme consistent
             SceneHelper.switchScene(FXMLPath.REGISTER, usernameField, "Kayıt Ol");
         } catch (Exception e) {
             System.out.println(SpecialColor.RED + "Register Sayfasına yönlendirme başarısız" + SpecialColor.RESET);

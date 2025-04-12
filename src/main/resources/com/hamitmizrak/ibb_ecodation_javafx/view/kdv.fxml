@@ -8,11 +8,17 @@
 
     <!-- ÜST: Arama ve Filtre -->
     <top>
-        <HBox spacing="10" padding="10">
-            <Label text="Ara (Fiş No):" />
-            <TextField fx:id="searchField" promptText="Fiş no giriniz..." />
-            <Button text="Filtreyi Temizle" onAction="#clearFilters" />
-        </HBox>
+        <VBox spacing="10" padding="10">
+            <HBox alignment="CENTER_RIGHT" spacing="10">
+                <Button fx:id="themeToggleButton" text="🌙 Karanlık Mod" onAction="#toggleTheme" />
+            </HBox>
+            
+            <HBox spacing="10">
+                <Label text="Ara (Fiş No):" />
+                <TextField fx:id="searchField" promptText="Fiş no giriniz..." styleClass="input-field" />
+                <Button text="Filtreyi Temizle" onAction="#clearFilters" styleClass="secondary-button" />
+            </HBox>
+        </VBox>
     </top>
 
     <!-- ORTA: Tablo -->
@@ -34,9 +40,9 @@
     <!-- ALT: Butonlar -->
     <bottom>
         <HBox spacing="10" padding="10" alignment="CENTER_RIGHT">
-            <Button text="KDV Ekle" onAction="#addKdv" />
-            <Button text="Güncelle" onAction="#updateKdv" />
-            <Button text="Sil" onAction="#deleteKdv" />
+            <Button text="KDV Ekle" onAction="#addKdv" styleClass="primary-button" />
+            <Button text="Güncelle" onAction="#updateKdv" styleClass="primary-button" />
+            <Button text="Sil" onAction="#deleteKdv" styleClass="secondary-button" />
         </HBox>
     </bottom>
 

@@ -17,7 +17,16 @@ public class SceneHelper {
             FXMLLoader loader = new FXMLLoader(SceneHelper.class.getResource(fxmlPath));
             Parent root = loader.load();
             Stage stage = (Stage) currentNode.getScene().getWindow();
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root);
+            
+            // Apply current theme to new scene
+            if (ThemeManager.isDarkTheme()) {
+                ThemeManager.setTheme(scene, true);
+            } else {
+                ThemeManager.setTheme(scene, false);
+            }
+            
+            stage.setScene(scene);
             stage.setTitle(title);
             stage.show();
         } catch (IOException e) {

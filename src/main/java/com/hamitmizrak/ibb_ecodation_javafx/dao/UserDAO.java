@@ -8,13 +8,13 @@ package com.hamitmizrak.ibb_ecodation_javafx.dao;
 import com.hamitmizrak.ibb_ecodation_javafx.database.SingletonPropertiesDBConnection;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,9 +30,9 @@ public class UserDAO implements IDaoImplements<UserDTO>, ILogin<UserDTO> {
     public Optional<UserDTO> create(UserDTO userDTO) {
         String sql = "INSERT INTO usertable (username, password, email, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            String hashedPassword = BCrypt.hashpw(userDTO.getPassword(), BCrypt.gensalt());
+            String encodedPassword = Base64.getEncoder().encodeToString(userDTO.getPassword().getBytes());
             preparedStatement.setString(1, userDTO.getUsername());
-            preparedStatement.setString(2, hashedPassword);
+            preparedStatement.setString(2, encodedPassword);
             preparedStatement.setString(3, userDTO.getEmail());
             preparedStatement.setString(4, userDTO.getRole().name());
             int affectedRows = preparedStatement.executeUpdate();
@@ -41,7 +41,7 @@ public class UserDAO implements IDaoImplements<UserDTO>, ILogin<UserDTO> {
                 try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         userDTO.setId(generatedKeys.getInt(1));
-                        userDTO.setPassword(hashedPassword);
+                        userDTO.setPassword(encodedPassword);
                         return Optional.of(userDTO);
                     }
                 }
@@ -86,9 +86,9 @@ public class UserDAO implements IDaoImplements<UserDTO>, ILogin<UserDTO> {
         if (optionalUpdate.isPresent()) {
             String sql = "UPDATE usertable SET username=?, password=?, email=?, role=? WHERE id=?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-                String hashedPassword = BCrypt.hashpw(userDTO.getPassword(), BCrypt.gensalt());
+                String encodedPassword = Base64.getEncoder().encodeToString(userDTO.getPassword().getBytes());
                 preparedStatement.setString(1, userDTO.getUsername());
-                preparedStatement.setString(2, hashedPassword);
+                preparedStatement.setString(2, encodedPassword);
                 preparedStatement.setString(3, userDTO.getEmail());
                 preparedStatement.setString(4, userDTO.getRole().name());
                 preparedStatement.setInt(5, id);
@@ -96,7 +96,7 @@ public class UserDAO implements IDaoImplements<UserDTO>, ILogin<UserDTO> {
                 int affectedRows = preparedStatement.executeUpdate();
                 if (affectedRows > 0) {
                     userDTO.setId(id);
-                    userDTO.setPassword(hashedPassword);
+                    userDTO.setPassword(encodedPassword);
                     return Optional.of(userDTO);
                 }
             } catch (Exception exception) {
@@ -159,7 +159,8 @@ public class UserDAO implements IDaoImplements<UserDTO>, ILogin<UserDTO> {
 
         if (userOpt.isPresent()) {
             UserDTO user = userOpt.get();
-            if (BCrypt.checkpw(password, user.getPassword())) {
+            String encodedPassword = Base64.getEncoder().encodeToString(password.getBytes());
+            if (encodedPassword.equals(user.getPassword())) {
                 return Optional.of(user);
             }
         }

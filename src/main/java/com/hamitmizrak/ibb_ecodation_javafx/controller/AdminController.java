@@ -6,6 +6,8 @@ import com.hamitmizrak.ibb_ecodation_javafx.dto.KdvDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -16,6 +18,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.print.Printer;
 import javafx.print.PrinterJob;
 import javafx.scene.Node;
@@ -23,8 +26,14 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -98,6 +107,14 @@ public class AdminController {
     @FXML
     private Label clockLabel;
 
+    @FXML
+    private Button themeButton;
+    
+    @FXML
+    private Button languageButton;
+
+    @FXML
+    private MenuBar menuBar;
 
     @FXML
     public void initialize() {
@@ -155,6 +172,16 @@ public class AdminController {
         searchKdvField.textProperty().addListener((obs, oldVal, newVal) -> applyKdvFilter());
 
         refreshKdvTable();
+
+        // Initialize theme button based on current state
+        if (themeButton != null) {
+            themeButton.setText(ThemeManager.isDarkTheme() ? "☀️ Aydınlık Mod" : "🌙 Karanlık Mod");
+        }
+        
+        // Initialize language button based on current state
+        if (languageButton != null) {
+            languageButton.setText("🌐 " + (LanguageManager.isTurkish() ? "EN" : "TR"));
+        }
     }
 
     // KULLANICI
@@ -217,6 +244,10 @@ public class AdminController {
         Alert alert = new Alert(type);
         alert.setTitle(title);
         alert.setContentText(message);
+        
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(alert);
+        
         alert.showAndWait();
     }
 
@@ -226,13 +257,20 @@ public class AdminController {
         alert.setTitle("Çıkış Yap");
         alert.setHeaderText("Oturumdan çıkmak istiyor musunuz?");
         alert.setContentText("Emin misiniz?");
+        
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(alert);
+        
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 FXMLLoader loader = new FXMLLoader(getClass().getResource(FXMLPath.LOGIN));
                 Parent root = loader.load();
+                Scene loginScene = new Scene(root);
+                ThemeManager.setTheme(loginScene, ThemeManager.isDarkTheme());
+                
                 Stage stage = (Stage) userTable.getScene().getWindow();
-                stage.setScene(new Scene(root));
+                stage.setScene(loginScene);
                 stage.show();
             } catch (IOException e) {
                 showAlert("Hata", "Giriş sayfasına yönlendirme başarısız!", Alert.AlertType.ERROR);
@@ -295,6 +333,12 @@ public class AdminController {
         DatePicker datePicker = new DatePicker();
         Label resultLabel = new Label();
 
+        // Apply style classes to form elements
+        amountField.getStyleClass().add("input-field");
+        customKdv.getStyleClass().add("input-field");
+        receiptField.getStyleClass().add("input-field");
+        datePicker.getStyleClass().add("input-field");
+        
         kdvBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             customKdv.setDisable(!"Özel".equals(newVal));
             if (!"Özel".equals(newVal)) customKdv.clear();
@@ -313,6 +357,9 @@ public class AdminController {
         dialog.getDialogPane().getButtonTypes().addAll(
                 new ButtonType("Hesapla", ButtonBar.ButtonData.OK_DONE), ButtonType.CLOSE);
 
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(dialog);
+        
         dialog.setResultConverter(button -> {
             if (button.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
                 try {
@@ -353,6 +400,10 @@ public class AdminController {
         dialog.setTitle("Dışa Aktar");
         dialog.setHeaderText("KDV sonucu nasıl dışa aktarılsın?");
         dialog.setContentText("Format:");
+        
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(dialog);
+        
         dialog.showAndWait().ifPresent(choice -> {
             switch (choice) {
                 case "TXT" -> exportAsTxt(content);
@@ -368,6 +419,9 @@ public class AdminController {
         dialog.setTitle("E-Posta Gönder");
         dialog.setHeaderText("KDV sonucunu göndereceğiniz e-posta adresini girin:");
         dialog.setContentText("E-posta:");
+        
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(dialog);
 
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(receiver -> {
@@ -791,7 +845,7 @@ public class AdminController {
                                     ? existingUser.getPassword()
                                     : passwordField.getText().trim())
                             .email(emailField.getText().trim())
-                            .role(ERole.valueOf(roleComboBox.getValue().name())) // Enum’dan string’e dönüşüm
+                            .role(ERole.valueOf(roleComboBox.getValue().name())) // Enum'dan string'e dönüşüm
                             .build();
                 }
                 return null;
@@ -799,52 +853,6 @@ public class AdminController {
         }
     }
 
-
-    @FXML
-    public void updateUserEski(ActionEvent actionEvent) {
-        UserDTO selectedUser = userTable.getSelectionModel().getSelectedItem();
-
-        if (selectedUser == null) {
-            showAlert("Uyarı", "Lütfen güncellenecek bir kullanıcı seçin!", Alert.AlertType.WARNING);
-            return;
-        }
-
-        TextInputDialog usernameDialog = new TextInputDialog(selectedUser.getUsername());
-        usernameDialog.setTitle("Kullanıcı Adı Güncelle");
-        usernameDialog.setHeaderText("Yeni kullanıcı adını girin:");
-        Optional<String> newUsername = usernameDialog.showAndWait();
-        if (newUsername.isEmpty()) return;
-
-        TextInputDialog passwordDialog = new TextInputDialog();
-        passwordDialog.setTitle("Şifre Güncelle");
-        passwordDialog.setHeaderText("Yeni şifreyi girin:");
-        Optional<String> newPassword = passwordDialog.showAndWait();
-        if (newPassword.isEmpty()) return;
-
-        TextInputDialog emailDialog = new TextInputDialog(selectedUser.getEmail());
-        emailDialog.setTitle("Email Güncelle");
-        emailDialog.setHeaderText("Yeni e-posta adresini girin:");
-        Optional<String> newEmail = emailDialog.showAndWait();
-        if (newEmail.isEmpty()) return;
-
-        // Sayfa açılır açılmaz geliyor
-        //String role = roleComboBox.getValue();
-
-        UserDTO updatedUser = UserDTO.builder()
-                .username(newUsername.get())
-                .password(newPassword.get())
-                .email(newEmail.get())
-                //.role(role) //// Sayfa açılır açılmaz geliyor
-                .build();
-
-        Optional<UserDTO> result = userDAO.update(selectedUser.getId(), updatedUser);
-        if (result.isPresent()) {
-            showAlert("Başarılı", "Kullanıcı başarıyla güncellendi!", Alert.AlertType.INFORMATION);
-            refreshTable();
-        } else {
-            showAlert("Hata", "Güncelleme sırasında hata oluştu!", Alert.AlertType.ERROR);
-        }
-    }
 
     @FXML
     public void updateUser(ActionEvent actionEvent) {
@@ -855,23 +863,126 @@ public class AdminController {
             return;
         }
 
-        UpdateUserDialog dialog = new UpdateUserDialog(selectedUser);
-        Optional<UserDTO> result = dialog.showAndWait();
+        // Show the popup for updating the user
+        showUserUpdatePopup(selectedUser);
+    }
 
-        result.ifPresent(updatedUser -> {
-            if (updatedUser.getUsername().isEmpty() || updatedUser.getPassword().isEmpty() || updatedUser.getEmail().isEmpty()) {
+    private void showUserUpdatePopup(UserDTO existingUser) {
+        // Create the popup
+        Popup popup = new Popup();
+        popup.setAutoHide(true); // Click outside to close
+        
+        // Create the content using VBox
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setMinWidth(450);
+        content.setMaxWidth(450);
+        
+        // Create header
+        Label titleLabel = new Label("Kullanıcı Güncelle");
+        titleLabel.getStyleClass().addAll("title-label");
+        
+        // Create form fields
+        TextField usernameField = new TextField(existingUser.getUsername());
+        PasswordField passwordField = new PasswordField();
+        TextField emailField = new TextField(existingUser.getEmail());
+        
+        ComboBox<ERole> roleComboBox = new ComboBox<>();
+        roleComboBox.getItems().addAll(ERole.values());
+        
+        // Set current role
+        try {
+            roleComboBox.setValue(ERole.fromString(String.valueOf(existingUser.getRole())));
+        } catch (RuntimeException e) {
+            roleComboBox.setValue(ERole.USER);
+        }
+        
+        // Create a grid for form layout
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(15);
+        grid.setPadding(new Insets(10, 0, 20, 0));
+        grid.getStyleClass().add("grid-pane");
+        
+        // Add field labels with styling
+        Label usernameLabel = new Label("Kullanıcı Adı:");
+        Label passwordLabel = new Label("Yeni Şifre:");
+        Label emailLabel = new Label("E-posta:");
+        Label roleLabel = new Label("Rol:");
+        
+        grid.add(usernameLabel, 0, 0);
+        grid.add(usernameField, 1, 0);
+        grid.add(passwordLabel, 0, 1);
+        grid.add(passwordField, 1, 1);
+        grid.add(emailLabel, 0, 2);
+        grid.add(emailField, 1, 2);
+        grid.add(roleLabel, 0, 3);
+        grid.add(roleComboBox, 1, 3);
+        
+        // Ensure columns are properly sized
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPrefWidth(100);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPrefWidth(300);
+        col2.setHgrow(javafx.scene.layout.Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(col1, col2);
+        
+        // Create buttons with modern styling
+        HBox buttonBox = new HBox(12);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        
+        Button saveButton = new Button("Güncelle");
+        Button cancelButton = new Button("İptal");
+        
+        buttonBox.getChildren().addAll(cancelButton, saveButton);
+        
+        // Add components to the content VBox
+        content.getChildren().addAll(titleLabel, grid, buttonBox);
+        
+        // Set event handlers
+        saveButton.setOnAction(e -> {
+            // Validate fields
+            if (usernameField.getText().trim().isEmpty() || emailField.getText().trim().isEmpty()) {
                 showAlert("Hata", "Tüm alanlar doldurulmalı!", Alert.AlertType.ERROR);
                 return;
             }
-
-            Optional<UserDTO> updated = userDAO.update(selectedUser.getId(), updatedUser);
+            
+            // Create updated user object
+            UserDTO updatedUser = UserDTO.builder()
+                    .username(usernameField.getText().trim())
+                    .password(passwordField.getText().trim().isEmpty() 
+                            ? existingUser.getPassword() 
+                            : passwordField.getText().trim())
+                    .email(emailField.getText().trim())
+                    .role(ERole.valueOf(roleComboBox.getValue().name()))
+                    .build();
+            
+            // Update in database
+            Optional<UserDTO> updated = userDAO.update(existingUser.getId(), updatedUser);
             if (updated.isPresent()) {
                 showAlert("Başarılı", "Kullanıcı güncellendi!", Alert.AlertType.INFORMATION);
                 refreshTable();
             } else {
                 showAlert("Hata", "Güncelleme işlemi başarısız!", Alert.AlertType.ERROR);
             }
+            
+            // Close popup
+            popup.hide();
         });
+        
+        cancelButton.setOnAction(e -> popup.hide());
+        
+        // Add content to popup
+        popup.getContent().add(content);
+        
+        // Apply theme styling
+        ThemeManager.stylePopup(popup);
+        
+        // Center the popup on the window
+        Window window = userTable.getScene().getWindow();
+        double centerX = window.getX() + (window.getWidth() / 2) - 225;
+        double centerY = window.getY() + (window.getHeight() / 2) - 200;
+        popup.show(window, centerX, centerY);
     }
 
 
@@ -916,14 +1027,10 @@ public class AdminController {
     // ➕ KDV ekle
     @FXML
     public void addKdv() {
-        KdvDTO newKdv = showKdvForm(null);
-        if (newKdv != null && newKdv.isValid()) {
-            kdvDAO.create(newKdv);
-            refreshKdvTable();
-            showAlert("Başarılı", "KDV kaydı eklendi.", Alert.AlertType.INFORMATION);
-        }
+        // Show KDV popup for creating a new KDV entry
+        showKdvPopup(null);
     }
-
+    
     // ✏️ KDV güncelle
     @FXML
     public void updateKdv() {
@@ -933,12 +1040,8 @@ public class AdminController {
             return;
         }
 
-        KdvDTO updated = showKdvForm(selected);
-        if (updated != null && updated.isValid()) {
-            kdvDAO.update(selected.getId(), updated);
-            refreshKdvTable();
-            showAlert("Başarılı", "KDV kaydı güncellendi.", Alert.AlertType.INFORMATION);
-        }
+        // Show KDV popup for updating an existing KDV entry
+        showKdvPopup(selected);
     }
 
     // ❌ KDV sil
@@ -952,6 +1055,10 @@ public class AdminController {
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Silmek istiyor musunuz?", ButtonType.OK, ButtonType.CANCEL);
         confirm.setHeaderText("Fiş: " + selected.getReceiptNumber());
+        
+        // Apply theme styling
+        ThemeManager.styleDialog(confirm);
+        
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             kdvDAO.delete(selected.getId());
@@ -959,21 +1066,32 @@ public class AdminController {
             showAlert("Silindi", "KDV kaydı silindi.", Alert.AlertType.INFORMATION);
         }
     }
-
-    // 💬 Ortak form (ekle/güncelle)
-    private KdvDTO showKdvForm(KdvDTO existing) {
-        Dialog<KdvDTO> dialog = new Dialog<>();
-        dialog.setTitle(existing == null ? "Yeni KDV Ekle" : "KDV Güncelle");
-
+    
+    private void showKdvPopup(KdvDTO existing) {
+        // Create the popup
+        Popup popup = new Popup();
+        popup.setAutoHide(true); // Click outside to close
+        
+        // Create the content using VBox
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setMinWidth(450);
+        content.setMaxWidth(450);
+        
+        // Create header
+        Label titleLabel = new Label(existing == null ? "Yeni KDV Ekle" : "KDV Güncelle");
+        titleLabel.getStyleClass().addAll("title-label");
+        
+        // Create form fields
         TextField amountField = new TextField();
         TextField rateField = new TextField();
         TextField receiptField = new TextField();
-        DatePicker datePicker = new DatePicker(LocalDate.now());
+        DatePicker datePicker = new DatePicker();
         TextField descField = new TextField();
         ComboBox<String> exportCombo = new ComboBox<>();
         exportCombo.getItems().addAll("TXT", "PDF", "EXCEL");
         exportCombo.setValue("TXT");
-
+        
         if (existing != null) {
             amountField.setText(String.valueOf(existing.getAmount()));
             rateField.setText(String.valueOf(existing.getKdvRate()));
@@ -982,50 +1100,194 @@ public class AdminController {
             descField.setText(existing.getDescription());
             exportCombo.setValue(existing.getExportFormat());
         }
-
+        
+        // Create a grid for form layout
         GridPane grid = new GridPane();
-        grid.setHgap(10); grid.setVgap(10);
-        grid.addRow(0, new Label("Tutar:"), amountField);
-        grid.addRow(1, new Label("KDV Oranı (%):"), rateField);
-        grid.addRow(2, new Label("Fiş No:"), receiptField);
-        grid.addRow(3, new Label("Tarih:"), datePicker);
-        grid.addRow(4, new Label("Açıklama:"), descField);
-        grid.addRow(5, new Label("Format:"), exportCombo);
-
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-
-        dialog.setResultConverter(btn -> {
-            if (btn == ButtonType.OK) {
-                try {
-                    return KdvDTO.builder()
-                            .amount(Double.parseDouble(amountField.getText()))
-                            .kdvRate(Double.parseDouble(rateField.getText()))
-                            .receiptNumber(receiptField.getText())
-                            .transactionDate(datePicker.getValue())
-                            .description(descField.getText())
-                            .exportFormat(exportCombo.getValue())
-                            .build();
-                } catch (Exception e) {
-                    showAlert("Hata", "Geçersiz veri!", Alert.AlertType.ERROR);
+        grid.setHgap(15);
+        grid.setVgap(15);
+        grid.setPadding(new Insets(10, 0, 20, 0));
+        grid.getStyleClass().add("grid-pane");
+        
+        // Add field labels with styling
+        Label amountLabel = new Label("Tutar:");
+        Label rateLabel = new Label("KDV Oranı (%):");
+        Label receiptLabel = new Label("Fiş No:");
+        Label dateLabel = new Label("Tarih:");
+        Label descLabel = new Label("Açıklama:");
+        Label formatLabel = new Label("Format:");
+        
+        grid.add(amountLabel, 0, 0);
+        grid.add(amountField, 1, 0);
+        grid.add(rateLabel, 0, 1);
+        grid.add(rateField, 1, 1);
+        grid.add(receiptLabel, 0, 2);
+        grid.add(receiptField, 1, 2);
+        grid.add(dateLabel, 0, 3);
+        grid.add(datePicker, 1, 3);
+        grid.add(descLabel, 0, 4);
+        grid.add(descField, 1, 4);
+        grid.add(formatLabel, 0, 5);
+        grid.add(exportCombo, 1, 5);
+        
+        // Ensure columns are properly sized
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPrefWidth(120);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPrefWidth(280);
+        col2.setHgrow(javafx.scene.layout.Priority.ALWAYS);
+        grid.getColumnConstraints().addAll(col1, col2);
+        
+        // Create buttons with modern styling
+        HBox buttonBox = new HBox(12);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+        
+        Button saveButton = new Button(existing == null ? "Ekle" : "Güncelle");
+        Button cancelButton = new Button("İptal");
+        
+        buttonBox.getChildren().addAll(cancelButton, saveButton);
+        
+        // Add components to the content VBox
+        content.getChildren().addAll(titleLabel, grid, buttonBox);
+        
+        // Set event handlers
+        saveButton.setOnAction(e -> {
+            try {
+                KdvDTO kdvDTO = KdvDTO.builder()
+                        .amount(Double.parseDouble(amountField.getText()))
+                        .kdvRate(Double.parseDouble(rateField.getText()))
+                        .receiptNumber(receiptField.getText())
+                        .transactionDate(datePicker.getValue())
+                        .description(descField.getText())
+                        .exportFormat(exportCombo.getValue())
+                        .build();
+                        
+                if (kdvDTO.isValid()) {
+                    if (existing == null) {
+                        // Create new KDV entry
+                        kdvDAO.create(kdvDTO);
+                        showAlert("Başarılı", "KDV kaydı eklendi.", Alert.AlertType.INFORMATION);
+                    } else {
+                        // Update existing KDV entry
+                        kdvDAO.update(existing.getId(), kdvDTO);
+                        showAlert("Başarılı", "KDV kaydı güncellendi.", Alert.AlertType.INFORMATION);
+                    }
+                    refreshKdvTable();
+                    popup.hide();
+                } else {
+                    showAlert("Hata", "Geçersiz KDV bilgileri!", Alert.AlertType.ERROR);
                 }
+            } catch (Exception ex) {
+                showAlert("Hata", "Geçersiz veri girdiniz!", Alert.AlertType.ERROR);
             }
-            return null;
         });
-
-        Optional<KdvDTO> result = dialog.showAndWait();
-        return result.orElse(null);
+        
+        cancelButton.setOnAction(e -> popup.hide());
+        
+        // Add content to popup
+        popup.getContent().add(content);
+        
+        // Apply theme styling
+        ThemeManager.stylePopup(popup);
+        
+        // Center the popup on the window
+        Window window = kdvTable.getScene().getWindow();
+        double centerX = window.getX() + (window.getWidth() / 2) - 225;
+        double centerY = window.getY() + (window.getHeight() / 2) - 200;
+        popup.show(window, centerX, centerY);
     }
 
     // BİTİRME PROJESİ
     @FXML
     private void toggleTheme(ActionEvent event) {
-        // Tema değiştirme işlemleri burada yapılacak
+        Button sourceButton = (Button) event.getSource();
+        Scene scene = sourceButton.getScene();
+        ThemeManager.toggleTheme(scene, sourceButton);
     }
 
     @FXML
     private void languageTheme(ActionEvent event) {
-        // Uygulamanın dili değiştirilecek (TR/EN vs.)
+        // Toggle language
+        LanguageManager.toggleLanguage();
+        
+        // Update button text
+        Button sourceButton = (Button) event.getSource();
+        sourceButton.setText("🌐 " + (LanguageManager.isTurkish() ? "EN" : "TR"));
+        
+        // Update UI elements with new language
+        updateUILanguage();
+    }
+    
+    /**
+     * Update UI elements with current language strings
+     */
+    private void updateUILanguage() {
+        // Update headers, labels, and other text elements
+        Stage stage = (Stage) userTable.getScene().getWindow();
+        stage.setTitle(LanguageManager.getString("app.title"));
+        
+        // Update all text elements with localized strings
+        // For demonstration, I'll update some key elements
+        
+        // Main header label - Find the main title label in the scene hierarchy
+        BorderPane root = (BorderPane) userTable.getScene().getRoot();
+        VBox topContainer = (VBox) root.getTop();
+        HBox headerBox = (HBox) topContainer.getChildren().get(0);
+        
+        for (Node node : headerBox.getChildren()) {
+            if (node instanceof Label) {
+                Label label = (Label) node;
+                if (label.getText().contains("Yönetim Paneli") || 
+                    label.getText().contains("Admin Panel")) {
+                    label.setText(LanguageManager.getString("admin.panel"));
+                    break;
+                }
+            }
+        }
+        
+        // Update menu items
+        for (Menu menu : menuBar.getMenus()) {
+            if (menu.getText().equals("Dosya") || menu.getText().equals("File")) {
+                menu.setText(LanguageManager.getString("menu.file"));
+                for (MenuItem item : menu.getItems()) {
+                    if (item.getText().equals("Çıkış") || item.getText().equals("Exit")) {
+                        item.setText(LanguageManager.getString("menu.file.exit"));
+                    }
+                }
+            } else if (menu.getText().equals("Kullanıcı") || menu.getText().equals("User")) {
+                menu.setText(LanguageManager.getString("menu.user"));
+                for (MenuItem item : menu.getItems()) {
+                    if (item.getText().equals("Kullanıcı Ekle") || item.getText().equals("Add User")) {
+                        item.setText(LanguageManager.getString("menu.user.add"));
+                    } else if (item.getText().equals("Kullanıcı Güncelle") || item.getText().equals("Update User")) {
+                        item.setText(LanguageManager.getString("menu.user.update"));
+                    } else if (item.getText().equals("Kullanıcı Sil") || item.getText().equals("Delete User")) {
+                        item.setText(LanguageManager.getString("menu.user.delete"));
+                    }
+                }
+            }
+            // Update other menus similarly...
+        }
+        
+        // Update table columns for user table
+        idColumn.setText(LanguageManager.getString("user.id"));
+        usernameColumn.setText(LanguageManager.getString("user.username"));
+        emailColumn.setText(LanguageManager.getString("user.email"));
+        passwordColumn.setText(LanguageManager.getString("user.password"));
+        roleColumn.setText(LanguageManager.getString("user.role"));
+        
+        // Update table columns for KDV table
+        idColumnKdv.setText(LanguageManager.getString("kdv.id"));
+        amountColumn.setText(LanguageManager.getString("kdv.amount"));
+        kdvRateColumn.setText(LanguageManager.getString("kdv.rate"));
+        kdvAmountColumn.setText(LanguageManager.getString("kdv.kdv.amount"));
+        totalAmountColumn.setText(LanguageManager.getString("kdv.total"));
+        receiptColumn.setText(LanguageManager.getString("kdv.receipt"));
+        dateColumn.setText(LanguageManager.getString("kdv.date"));
+        descColumn.setText(LanguageManager.getString("kdv.description"));
+        
+        // Update prompts for text fields
+        searchField.setPromptText(LanguageManager.getString("user.search"));
+        searchKdvField.setPromptText(LanguageManager.getString("kdv.search"));
     }
 
     @FXML

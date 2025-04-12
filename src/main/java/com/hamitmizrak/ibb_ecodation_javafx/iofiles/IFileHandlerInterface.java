@@ -1,4 +1,4 @@
-package com.hamitmizrak.iofiles;
+package com.hamitmizrak.ibb_ecodation_javafx.iofiles;
 
 /**
  * 📌 Dosya işlemleri için temel arayüz

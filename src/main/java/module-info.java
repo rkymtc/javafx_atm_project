@@ -37,7 +37,6 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // Java'daki SQL işlemlerini (Connection, Statement, ResultSet vb.) gerçekleştirebilmek için gereklidir.
     requires java.sql;
     requires com.h2database;
-    requires jbcrypt;
     requires org.apache.poi.ooxml;
     requires org.apache.pdfbox;
     requires java.desktop;

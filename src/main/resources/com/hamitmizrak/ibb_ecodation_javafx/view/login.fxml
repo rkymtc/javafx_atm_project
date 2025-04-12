@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 
 <VBox xmlns="http://javafx.com/javafx/8"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -17,24 +17,28 @@
              -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 20, 0.5, 0, 5);">
     <!--stylesheets="@css/styles.css"-->
 
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Button fx:id="themeToggleButton" text="🌙 Karanlık Mod" onAction="#toggleTheme" />
+    </HBox>
+
     <Label text="Kullanıcı Girişi"
-           style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: black;" />
+           styleClass="title-label" style="-fx-font-size: 28px; -fx-font-weight: bold;" />
 
     <TextField fx:id="usernameField"
                promptText="Kullanıcı Adı / Email"
-               style="-fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10;" />
+               styleClass="input-field" style="-fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10;" />
 
     <PasswordField fx:id="passwordField"
                    promptText="Şifre"
-                   style="-fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10;" />
+                   styleClass="input-field" style="-fx-font-size: 16px; -fx-background-radius: 10; -fx-padding: 10;" />
 
     <Button
             text="Giriş Yap"
             onAction="#login"
-            style="-fx-font-size: 18px; -fx-background-color: #2a9df4; -fx-text-fill: white;"/>
+            styleClass="primary-button" style="-fx-font-size: 18px;"/>
     <Button
             text="Kayıt Yap"
             onAction="#switchToRegister"
-            style="-fx-font-size: 18px; -fx-background-color: #2a9df4; -fx-text-fill: white;"/>
+            styleClass="secondary-button" style="-fx-font-size: 18px;"/>
 
 </VBox>

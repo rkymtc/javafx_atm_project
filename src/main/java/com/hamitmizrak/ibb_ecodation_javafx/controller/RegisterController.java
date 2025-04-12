@@ -6,11 +6,13 @@ import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SceneHelper;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -31,6 +33,37 @@ public class RegisterController {
     private TextField passwordField;
     @FXML
     private TextField emailField;
+    @FXML
+    private Button themeToggleButton;
+    
+    @FXML
+    public void initialize() {
+        // Apply current theme when the scene is ready
+        if (usernameField.getScene() != null) {
+            ThemeManager.setTheme(usernameField.getScene(), ThemeManager.isDarkTheme());
+            updateThemeButton();
+        } else {
+            // Scene might not be ready yet, we need to wait
+            usernameField.sceneProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue != null) {
+                    ThemeManager.setTheme(newValue, ThemeManager.isDarkTheme());
+                    updateThemeButton();
+                }
+            });
+        }
+    }
+    
+    private void updateThemeButton() {
+        if (themeToggleButton != null) {
+            themeToggleButton.setText(ThemeManager.isDarkTheme() ? "☀️ Aydınlık Mod" : "🌙 Karanlık Mod");
+        }
+    }
+    
+    @FXML
+    private void toggleTheme() {
+        Scene scene = themeToggleButton.getScene();
+        ThemeManager.toggleTheme(scene, themeToggleButton);
+    }
 
     private void showAlert(String title, String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
@@ -79,7 +112,7 @@ public class RegisterController {
         Optional<UserDTO> createdUser = userDAO.create(userDTO);
         if (createdUser.isPresent()) {
             showAlert("Başarılı", "Kayıt başarılı", Alert.AlertType.INFORMATION);
-            switchToLoginPane();
+            switchToLogin();
         } else {
             showAlert("Hata", "Kayıt başarısız oldu", Alert.AlertType.ERROR);
         }
@@ -87,18 +120,9 @@ public class RegisterController {
 
 
     @FXML
-    private void switchToLoginPane() {
+    private void switchToLogin() {
         try {
-            //1.YOL
-            /*
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(FXMLPath.LOGIN));
-            Parent parent = fxmlLoader.load();
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(new Scene(parent));
-            stage.setTitle("Giriş Yap");
-            stage.show();
-             */
-            //2.YOL
+            // Use SceneHelper to maintain theme consistency
             SceneHelper.switchScene(FXMLPath.LOGIN, usernameField, "Giriş Yap");
         } catch (Exception e) {
             System.out.println(SpecialColor.RED + "Login Sayfasına yönlendirme başarısız" + SpecialColor.RESET);
