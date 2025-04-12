@@ -367,5 +367,5 @@ HBox.footer .label {
 }
 
 .alert.error {
-    -fx-graphic: url("../images/error-icon.png");
+    -fx-graphic: url("../images/deneme.png");
 } 

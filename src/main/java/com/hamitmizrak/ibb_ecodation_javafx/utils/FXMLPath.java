@@ -7,4 +7,5 @@ public class FXMLPath {
     public static final String REGISTER = "/com/hamitmizrak/ibb_ecodation_javafx/view/register.fxml";
     public static final String ADMIN = "/com/hamitmizrak/ibb_ecodation_javafx/view/admin.fxml";
     public static final String USER_HOME = "/com/hamitmizrak/ibb_ecodation_javafx/view/hello-view.fxml";
+    public static final String PROFILE = "/com/hamitmizrak/ibb_ecodation_javafx/view/profile.fxml";
 }

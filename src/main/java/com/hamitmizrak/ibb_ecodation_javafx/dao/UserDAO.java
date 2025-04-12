@@ -190,6 +190,41 @@ public class UserDAO implements IDaoImplements<UserDTO>, ILogin<UserDTO> {
             return true; // hata varsa true dön ki işlem durdurulsun
         }
     }
-
+    
+    /**
+     * Changes a user's password if the current password is correct
+     * @param userId the user ID
+     * @param currentPassword the current password
+     * @param newPassword the new password to set
+     * @return true if password was successfully changed, false otherwise
+     */
+    public boolean changePassword(int userId, String currentPassword, String newPassword) {
+        Optional<UserDTO> userOptional = findById(userId);
+        if (userOptional.isPresent()) {
+            UserDTO user = userOptional.get();
+            String encodedCurrentPassword = Base64.getEncoder().encodeToString(currentPassword.getBytes());
+            
+            // Verify current password matches
+            if (encodedCurrentPassword.equals(user.getPassword())) {
+                String encodedNewPassword = Base64.getEncoder().encodeToString(newPassword.getBytes());
+                String sql = "UPDATE usertable SET password = ? WHERE id = ?";
+                
+                try (PreparedStatement ps = connection.prepareStatement(sql)) {
+                    ps.setString(1, encodedNewPassword);
+                    ps.setInt(2, userId);
+                    
+                    int affectedRows = ps.executeUpdate();
+                    if (affectedRows > 0) {
+                        // Update the user object with the new password
+                        user.setPassword(encodedNewPassword);
+                        return true;
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return false;
+    }
 
 }

@@ -7,7 +7,9 @@ import com.hamitmizrak.ibb_ecodation_javafx.dto.UserDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ERole;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.NotificationManager;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.UserSession;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -31,6 +33,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -60,6 +63,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 public class AdminController {
 
@@ -118,6 +122,14 @@ public class AdminController {
 
     @FXML
     public void initialize() {
+        // Debug için - kullanıcı oturumunu kontrol et
+        UserDTO currentUser = UserSession.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            System.out.println("Admin paneli açıldı. Aktif kullanıcı: " + currentUser.getUsername());
+        } else {
+            System.out.println("UYARI: Admin paneli açıldı fakat UserSession boş!");
+        }
+        
         // Zaman
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), e -> {
@@ -237,7 +249,12 @@ public class AdminController {
         List<UserDTO> userDTOList = optionalUsers.orElseGet(List::of);
         ObservableList<UserDTO> observableList = FXCollections.observableArrayList(userDTOList);
         userTable.setItems(observableList);
-        showAlert("Bilgi", "Tablo başarıyla yenilendi!", Alert.AlertType.INFORMATION);
+        
+        // Show notification only if scene is not null (e.g. during initialization)
+        if (userTable.getScene() != null && userTable.getScene().getWindow() != null) {
+            Window owner = userTable.getScene().getWindow();
+            NotificationManager.showSuccess(owner, LanguageManager.getString("alert.table.refresh"));
+        }
     }
 
     private void showAlert(String titleKey, String messageKey, Alert.AlertType type) {
@@ -249,6 +266,20 @@ public class AdminController {
         ThemeManager.styleDialog(alert);
         
         alert.showAndWait();
+        
+        // Also show as a notification, but only if scene is available
+        if (userTable != null && userTable.getScene() != null && userTable.getScene().getWindow() != null) {
+            Window owner = userTable.getScene().getWindow();
+            if (type == Alert.AlertType.ERROR) {
+                NotificationManager.showError(owner, LanguageManager.getString(messageKey));
+            } else if (type == Alert.AlertType.WARNING) {
+                NotificationManager.showWarning(owner, LanguageManager.getString(messageKey));
+            } else if (type == Alert.AlertType.INFORMATION) {
+                NotificationManager.showInfo(owner, LanguageManager.getString(messageKey));
+            } else if (type == Alert.AlertType.CONFIRMATION) {
+                NotificationManager.showInfo(owner, LanguageManager.getString(messageKey));
+            }
+        }
     }
 
     @FXML
@@ -264,6 +295,10 @@ public class AdminController {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
+                // Clear user session
+                UserSession.getInstance().logout();
+                System.out.println("Kullanıcı oturumu kapatıldı");
+                
                 FXMLLoader loader = new FXMLLoader(
                     getClass().getResource(FXMLPath.LOGIN),
                     LanguageManager.getResourceBundle()
@@ -991,27 +1026,43 @@ public class AdminController {
 
     @FXML
     public void deleteUser(ActionEvent actionEvent) {
-        Optional<UserDTO> selectedUser = Optional.ofNullable(userTable.getSelectionModel().getSelectedItem());
-        selectedUser.ifPresent(user -> {
-            Alert confirmationAlert = new Alert(Alert.AlertType.CONFIRMATION);
-            confirmationAlert.setTitle(LanguageManager.getString("confirm.delete.title"));
-            confirmationAlert.setHeaderText(LanguageManager.getString("confirm.delete.header"));
-            confirmationAlert.setContentText(LanguageManager.getString("confirm.delete.content") + ": " + user.getUsername());
-            
-            // Apply theme styling to dialog
-            ThemeManager.styleDialog(confirmationAlert);
-            
-            Optional<ButtonType> isDelete = confirmationAlert.showAndWait();
-            if (isDelete.isPresent() && isDelete.get() == ButtonType.OK) {
-                Optional<UserDTO> deleteUser = userDAO.delete(user.getId());
-                if (deleteUser.isPresent()) {
-                    showAlert("alert.success", "user.delete.success", Alert.AlertType.INFORMATION);
+        UserDTO selectedUser = userTable.getSelectionModel().getSelectedItem();
+        if (selectedUser == null) {
+            // Show notification instead of alert
+            Window owner = userTable.getScene().getWindow();
+            NotificationManager.showWarning(owner, "Lütfen silinecek bir kullanıcı seçin");
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(LanguageManager.getString("confirm.delete.title"));
+        alert.setHeaderText(LanguageManager.getString("confirm.delete.header"));
+        alert.setContentText(LanguageManager.getString("confirm.delete.content"));
+        
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(alert);
+        
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                Optional<UserDTO> deleted = userDAO.delete(selectedUser.getId());
+                if (deleted.isPresent()) {
                     refreshTable();
+                    // Show notification instead of alert
+                    Window owner = userTable.getScene().getWindow();
+                    NotificationManager.showSuccess(owner, LanguageManager.getString("user.delete.success"));
                 } else {
-                    showAlert("alert.error", "user.delete.error", Alert.AlertType.ERROR);
+                    // Show notification instead of alert
+                    Window owner = userTable.getScene().getWindow();
+                    NotificationManager.showError(owner, LanguageManager.getString("user.delete.error"));
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Show notification instead of alert
+                Window owner = userTable.getScene().getWindow();
+                NotificationManager.showError(owner, e.getMessage());
             }
-        });
+        }
     }
 
     // KDV
@@ -1054,23 +1105,42 @@ public class AdminController {
     // ❌ KDV sil
     @FXML
     public void deleteKdv() {
-        KdvDTO selected = kdvTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Uyarı", "Silinecek bir kayıt seçin.", Alert.AlertType.WARNING);
+        KdvDTO selectedKdv = kdvTable.getSelectionModel().getSelectedItem();
+        if (selectedKdv == null) {
+            // Show notification instead of alert
+            Window owner = kdvTable.getScene().getWindow();
+            NotificationManager.showWarning(owner, "Lütfen silinecek bir KDV kaydı seçin");
             return;
         }
 
-        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION, "Silmek istiyor musunuz?", ButtonType.OK, ButtonType.CANCEL);
-        confirm.setHeaderText("Fiş: " + selected.getReceiptNumber());
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(LanguageManager.getString("confirm.delete.title"));
+        alert.setHeaderText(LanguageManager.getString("confirm.delete.header"));
+        alert.setContentText(LanguageManager.getString("confirm.delete.content"));
         
-        // Apply theme styling
-        ThemeManager.styleDialog(confirm);
+        // Apply theme styling to dialog
+        ThemeManager.styleDialog(alert);
         
-        Optional<ButtonType> result = confirm.showAndWait();
+        Optional<ButtonType> result = alert.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            kdvDAO.delete(selected.getId());
-            refreshKdvTable();
-            showAlert("Silindi", "KDV kaydı silindi.", Alert.AlertType.INFORMATION);
+            try {
+                boolean isDeleted = kdvDAO.delete(selectedKdv.getId()) != null;
+                if (isDeleted) {
+                    refreshKdvTable();
+                    // Show notification instead of alert
+                    Window owner = kdvTable.getScene().getWindow();
+                    NotificationManager.showSuccess(owner, "KDV kaydı başarıyla silindi");
+                } else {
+                    // Show notification instead of alert
+                    Window owner = kdvTable.getScene().getWindow();
+                    NotificationManager.showError(owner, "KDV kaydı silinemedi");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // Show notification instead of alert
+                Window owner = kdvTable.getScene().getWindow();
+                NotificationManager.showError(owner, e.getMessage());
+            }
         }
     }
     
@@ -1206,44 +1276,23 @@ public class AdminController {
     // BİTİRME PROJESİ
     @FXML
     private void toggleTheme(ActionEvent event) {
-        Button sourceButton = (Button) event.getSource();
-        Scene scene = sourceButton.getScene();
-        ThemeManager.toggleTheme(scene, sourceButton);
+        ThemeManager.toggleTheme(userTable.getScene(), themeButton);
+        themeButton.setText(ThemeManager.isDarkTheme() ? "☀️ " + LanguageManager.getString("admin.theme.light") : "🌙 " + LanguageManager.getString("admin.theme.dark"));
+        
+        // Show notification
+        Window owner = userTable.getScene().getWindow();
+        NotificationManager.showInfo(owner, "Tema değiştirildi: " + (ThemeManager.isDarkTheme() ? "Karanlık Mod" : "Aydınlık Mod"));
     }
 
     @FXML
     private void languageTheme(ActionEvent event) {
-        // Toggle language
         LanguageManager.toggleLanguage();
+        updateUILanguage();
+        languageButton.setText("🌐 " + (LanguageManager.isTurkish() ? "EN" : "TR"));
         
-        // Update button text
-        Button sourceButton = (Button) event.getSource();
-        sourceButton.setText("🌐 " + (LanguageManager.isTurkish() ? "EN" : "TR"));
-        
-        // Reload the scene with the new language bundle
-        try {
-            // Get current stage
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            
-            // Load FXML with current ResourceBundle
-            FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/admin.fxml"),
-                LanguageManager.getResourceBundle()
-            );
-            
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            
-            // Apply current theme
-            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
-            
-            stage.setScene(scene);
-            stage.setTitle(LanguageManager.getString("admin.title"));
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Hata", "Dil değişikliği uygulanırken bir hata oluştu.", Alert.AlertType.ERROR);
-        }
+        // Show notification
+        Window owner = userTable.getScene().getWindow();
+        NotificationManager.showInfo(owner, "Dil değiştirildi: " + (LanguageManager.isTurkish() ? "Türkçe" : "English"));
     }
     
     /**
@@ -1321,12 +1370,77 @@ public class AdminController {
 
     @FXML
     private void showNotifications(ActionEvent event) {
-        // Bildirimleri gösteren popup veya panel açılacak
+        try {
+            // Düzeltilmiş dosya yolu
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/notifications-view.fxml"));
+            
+            // ResourceBundle'ı doğru şekilde ayarla
+            fxmlLoader.setResources(LanguageManager.getResourceBundle());
+            
+            Parent root = fxmlLoader.load();
+            
+            Stage stage = new Stage();
+            Scene scene = new Scene(root, 600, 400);
+            
+            // Apply current theme
+            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+            
+            stage.setTitle(LanguageManager.getString("notifications.title"));
+            stage.setScene(scene);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(userTable.getScene().getWindow());
+            stage.show();
+            
+            // Show notification for opening notifications panel
+            Window owner = userTable.getScene().getWindow();
+            NotificationManager.showInfo(owner, LanguageManager.getString("notifications.opened"));
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Error loading notifications: " + e.getMessage());
+            showAlert("alert.error", "notifications.load.error", Alert.AlertType.ERROR);
+        }
     }
 
     @FXML
     private void showProfile(ActionEvent event) {
-        // Kullanıcı profil bilgileri gösterilecek pencere
+        try {
+            // Debug - kullanıcı oturumunu kontrol et
+            UserDTO currentUser = UserSession.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                System.out.println("Profil sayfasına geçiliyor. Aktif kullanıcı: " + currentUser.getUsername());
+            } else {
+                System.out.println("UYARI: Profil sayfasına geçilirken UserSession boş!");
+                
+                // Test için geçici kullanıcı (gerçek uygulamada kaldırılmalı)
+                currentUser = UserDTO.builder()
+                    .id(1)
+                    .username("admin_test")
+                    .email("admin@example.com")
+                    .role(ERole.ADMIN)
+                    .password("test123")
+                    .build();
+                UserSession.getInstance().setCurrentUser(currentUser);
+                System.out.println("Test kullanıcısı oluşturuldu: " + currentUser.getUsername());
+            }
+            
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                getClass().getResource(FXMLPath.PROFILE),
+                LanguageManager.getResourceBundle()
+            );
+            Parent parent = fxmlLoader.load();
+            Scene scene = new Scene(parent);
+            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+            
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Profil Yönetimi");
+            stage.show();
+        } catch (Exception e) {
+            System.out.println("Profil sayfasına yönlendirme başarısız: " + e.getMessage());
+            e.printStackTrace();
+            showAlert("Hata", "Profil sayfası açılamadı.", Alert.AlertType.ERROR);
+        }
     }
 
     @FXML

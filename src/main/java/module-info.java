@@ -61,6 +61,9 @@ module com.hamitmizrak.ibb_ecodation_javafx {
     // Veritabanı bağlantısı sağlayan sınıfların da SQL modülüne açık olması gerekiyor.
     opens com.hamitmizrak.ibb_ecodation_javafx.database to java.sql;
 
+    // Resource bundles for internationalization
+    opens lang;
+
     // #####################################################################
     // Paket dışa aktarmak
     // `exports` ifadesi, paketin diğer modüller tarafından erişilebilir olmasını sağlar.

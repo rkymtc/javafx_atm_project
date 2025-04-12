@@ -185,4 +185,34 @@ public class ThemeManager {
     public static boolean isDarkTheme() {
         return isDarkTheme;
     }
+    
+    /**
+     * Apply dark theme to the scene
+     * @param scene The scene to apply the theme to
+     */
+    public static void applyDarkTheme(Scene scene) {
+        if (scene == null) return;
+        
+        // Clear existing stylesheets
+        scene.getStylesheets().clear();
+        
+        // Apply dark theme
+        scene.getStylesheets().add(Objects.requireNonNull(
+                ThemeManager.class.getResource(DARK_THEME)).toExternalForm());
+    }
+    
+    /**
+     * Apply light theme to the scene
+     * @param scene The scene to apply the theme to
+     */
+    public static void applyLightTheme(Scene scene) {
+        if (scene == null) return;
+        
+        // Clear existing stylesheets
+        scene.getStylesheets().clear();
+        
+        // Apply light theme
+        scene.getStylesheets().add(Objects.requireNonNull(
+                ThemeManager.class.getResource(LIGHT_THEME)).toExternalForm());
+    }
 } 

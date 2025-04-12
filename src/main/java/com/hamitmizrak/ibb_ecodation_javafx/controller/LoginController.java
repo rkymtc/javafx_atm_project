@@ -7,6 +7,7 @@ import com.hamitmizrak.ibb_ecodation_javafx.utils.FXMLPath;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SceneHelper;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.SpecialColor;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.ThemeManager;
+import com.hamitmizrak.ibb_ecodation_javafx.utils.UserSession;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -19,6 +20,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Optional;
 
 public class LoginController {
@@ -88,6 +91,10 @@ public class LoginController {
 
         if (optionalLoginUserDTO.isPresent()) {
             UserDTO userDTO = optionalLoginUserDTO.get();
+            
+            // Store the logged-in user in the session
+            UserSession.getInstance().setCurrentUser(userDTO);
+            
             showAlert("alert.success", "login.success.message", Alert.AlertType.INFORMATION);
 
             if (userDTO.getRole() == ERole.ADMIN) {
@@ -123,20 +130,36 @@ public class LoginController {
 
     private void openAdminPane() {
         try {
+            System.out.println("Opening admin panel, getting resource: " + FXMLPath.ADMIN);
+            URL resourceUrl = getClass().getResource(FXMLPath.ADMIN);
+            if (resourceUrl == null) {
+                System.out.println(SpecialColor.RED + "Admin FXML resource not found: " + FXMLPath.ADMIN + SpecialColor.RESET);
+                showAlert("alert.error", "admin.panel.load.error", Alert.AlertType.ERROR);
+                return;
+            }
+            System.out.println("Resource found: " + resourceUrl);
+            
             FXMLLoader fxmlLoader = new FXMLLoader(
-                getClass().getResource(FXMLPath.ADMIN),
+                resourceUrl,
                 com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getResourceBundle()
             );
-            Parent parent = fxmlLoader.load();
-            Scene scene = new Scene(parent);
-            ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
             
-            Stage stage = (Stage) usernameField.getScene().getWindow();
-            stage.setScene(scene);
-            stage.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString("admin.title"));
-            stage.show();
+            try {
+                Parent parent = fxmlLoader.load();
+                Scene scene = new Scene(parent);
+                ThemeManager.setTheme(scene, ThemeManager.isDarkTheme());
+                
+                Stage stage = (Stage) usernameField.getScene().getWindow();
+                stage.setScene(scene);
+                stage.setTitle(com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager.getString("admin.title"));
+                stage.show();
+            } catch (IOException e) {
+                System.out.println(SpecialColor.RED + "Error loading admin FXML: " + e.getMessage() + SpecialColor.RESET);
+                e.printStackTrace();
+                showAlert("alert.error", "admin.panel.load.error", Alert.AlertType.ERROR);
+            }
         } catch (Exception e) {
-            System.out.println(SpecialColor.RED + "Admin Sayfasına yönlendirme başarısız" + SpecialColor.RESET);
+            System.out.println(SpecialColor.RED + "Admin Sayfasına yönlendirme başarısız: " + e.getMessage() + SpecialColor.RESET);
             e.printStackTrace();
             showAlert("alert.error", "admin.panel.load.error", Alert.AlertType.ERROR);
         }
