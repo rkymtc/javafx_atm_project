@@ -1456,7 +1456,35 @@ public class AdminController {
 
     @FXML
     private void notebook(ActionEvent event) {
-        // Daha önce alınmış bir yedek dosyadan veri geri yüklenecek
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/com/hamitmizrak/ibb_ecodation_javafx/view/notebook.fxml"),
+                LanguageManager.getResourceBundle()
+            );
+            Parent root = loader.load();
+            
+            NoteBookController controller = loader.getController();
+            
+            // Geçerli kullanıcıyı NoteBookController'a aktar
+            UserDTO currentUser = UserSession.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                controller.setUser(currentUser);
+            }
+            
+            Stage stage = new Stage();
+            stage.setTitle("Not Defteri");
+            stage.setScene(new Scene(root));
+            
+            // Bu pencere kapatılmadan önce reminderScheduler'ı durdur
+            stage.setOnCloseRequest(e -> controller.shutdown());
+            
+            stage.show();
+            
+            NotificationManager.showInfo(stage, "Not Defteri açıldı");
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Hata", "Not Defteri açılırken bir hata oluştu: " + e.getMessage(), Alert.AlertType.ERROR);
+        }
     }
 
 }

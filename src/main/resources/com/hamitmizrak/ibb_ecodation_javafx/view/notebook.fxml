@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import java.net.URL?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+           xmlns:fx="http://javafx.com/fxml"
+           fx:controller="com.hamitmizrak.ibb_ecodation_javafx.controller.NoteBookController"
+           prefHeight="600.0" prefWidth="900.0">
+    
+    <stylesheets>
+        <URL value="@../css/style.css"/>
+    </stylesheets>
+
+    <top>
+        <HBox alignment="CENTER" styleClass="header">
+            <padding>
+                <Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Not Defteri" styleClass="title-label"/>
+        </HBox>
+    </top>
+    
+    <left>
+        <VBox spacing="10" minWidth="400" maxWidth="400" styleClass="form-panel">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            
+            <Label text="Not Başlığı" styleClass="form-label"/>
+            <TextField fx:id="txtTitle" promptText="Not başlığını girin"/>
+            
+            <Label text="İçerik" styleClass="form-label"/>
+            <TextArea fx:id="txtContent" promptText="Not içeriğini girin" minHeight="120" wrapText="true"/>
+            
+            <Label text="Kategori" styleClass="form-label"/>
+            <ComboBox fx:id="cmbCategory" promptText="Kategori seçin" maxWidth="Infinity"/>
+            
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <CheckBox fx:id="chkPinned" text="Sabitle"/>
+            </HBox>
+            
+            <TitledPane text="Hatırlatıcı Ayarla" expanded="false">
+                <VBox spacing="10">
+                    <Label text="Tarih" styleClass="form-label"/>
+                    <DatePicker fx:id="dpReminderDate" promptText="Hatırlatıcı tarihini seçin" maxWidth="Infinity"/>
+                    
+                    <HBox spacing="10">
+                        <VBox HBox.hgrow="ALWAYS" spacing="5">
+                            <Label text="Saat" styleClass="form-label"/>
+                            <ComboBox fx:id="cmbReminderHour" promptText="Saat" maxWidth="Infinity"/>
+                        </VBox>
+                        <VBox HBox.hgrow="ALWAYS" spacing="5">
+                            <Label text="Dakika" styleClass="form-label"/>
+                            <ComboBox fx:id="cmbReminderMinute" promptText="Dakika" maxWidth="Infinity"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </TitledPane>
+            
+            <HBox spacing="10" alignment="CENTER" VBox.vgrow="ALWAYS">
+                <padding>
+                    <Insets top="20" bottom="10"/>
+                </padding>
+                <Button fx:id="btnSave" text="Kaydet" onAction="#handleSave" styleClass="btn-primary" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnUpdate" text="Güncelle" onAction="#handleUpdate" styleClass="btn-success" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnDelete" text="Sil" onAction="#handleDelete" styleClass="btn-danger" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                <Button fx:id="btnClear" text="Temizle" onAction="#handleClear" styleClass="btn-secondary" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+            </HBox>
+            
+            <Label fx:id="lblStatus" styleClass="status-label" maxWidth="Infinity" alignment="CENTER"/>
+        </VBox>
+    </left>
+    
+    <center>
+        <VBox spacing="10" styleClass="content-panel">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+            <Label text="Notlarım" styleClass="section-label"/>
+            <TableView fx:id="tblNotes" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" minWidth="60" maxWidth="60"/>
+                    <TableColumn fx:id="colTitle" text="Başlık" minWidth="150"/>
+                    <TableColumn fx:id="colCategory" text="Kategori" minWidth="120"/>
+                    <TableColumn fx:id="colCreatedDate" text="Oluşturulma Tarihi" minWidth="150"/>
+                    <TableColumn fx:id="colReminderDateTime" text="Hatırlatıcı" minWidth="150"/>
+                    <TableColumn fx:id="colPinned" text="Sabitlenmiş" minWidth="80" maxWidth="80"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+    
+</BorderPane> 

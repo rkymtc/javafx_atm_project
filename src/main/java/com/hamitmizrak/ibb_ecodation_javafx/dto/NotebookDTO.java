@@ -18,6 +18,7 @@ public class NotebookDTO {
     private LocalDateTime updatedDate;
     private String category; // Örn: "Kişisel", "İş", "Okul"
     private boolean pinned;  // Sabitlenmiş not mu?
+    private LocalDateTime reminderDateTime; // Hatırlatıcı zamanı
     private UserDTO userDTO; //Composition
 
     // Constructorlar

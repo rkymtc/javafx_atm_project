@@ -3,27 +3,46 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import java.net.URL?>
 
-<VBox alignment="CENTER" spacing="20.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="com.hamitmizrak.ibb_ecodation_javafx.controller.NotificationController">
-    <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-    </padding>
-
-    <Label fx:id="titleLabel" styleClass="title-label" text="%notifications.title"/>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.hamitmizrak.ibb_ecodation_javafx.controller.NotificationController"
+      prefHeight="400.0" prefWidth="500.0" 
+      spacing="10">
     
-    <HBox spacing="10.0" alignment="CENTER_LEFT">
-        <Label text="%action.filter"/>
-        <ComboBox fx:id="filterComboBox" minWidth="150.0"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button fx:id="clearAllButton" styleClass="delete-button"/>
+    <stylesheets>
+        <URL value="@css/style.css"/>
+    </stylesheets>
+    
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+    
+    <HBox alignment="CENTER" styleClass="header">
+        <Label text="Not Hatırlatıcı" styleClass="title-label"/>
     </HBox>
     
-    <TableView fx:id="notificationTable" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="typeColumn" prefWidth="50.0"/>
-            <TableColumn fx:id="messageColumn" prefWidth="300.0"/>
-            <TableColumn fx:id="timestampColumn" prefWidth="150.0"/>
-        </columns>
-    </TableView>
+    <TitledPane text="Not Detayları" expanded="true">
+        <VBox spacing="10">
+            <HBox>
+                <Label text="Başlık: " styleClass="form-label" />
+                <Label fx:id="titleLabel" styleClass="note-title" />
+            </HBox>
+            
+            <Label text="İçerik:" styleClass="form-label" />
+            <TextArea fx:id="contentArea" wrapText="true" editable="false" 
+                     prefHeight="150" VBox.vgrow="ALWAYS"/>
+            
+            <HBox>
+                <Label text="Hatırlatıcı Zamanı: " styleClass="form-label" />
+                <Label fx:id="reminderTimeLabel" styleClass="reminder-time" />
+            </HBox>
+        </VBox>
+    </TitledPane>
+    
+    <HBox alignment="CENTER" spacing="10">
+        <Button text="Kapat" onAction="#closeNotification" styleClass="btn-primary"/>
+    </HBox>
+
 </VBox> 

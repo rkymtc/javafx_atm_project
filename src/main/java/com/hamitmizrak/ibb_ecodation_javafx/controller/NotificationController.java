@@ -1,5 +1,6 @@
 package com.hamitmizrak.ibb_ecodation_javafx.controller;
 
+import com.hamitmizrak.ibb_ecodation_javafx.dto.NotebookDTO;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.LanguageManager;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.NotificationManager;
 import com.hamitmizrak.ibb_ecodation_javafx.utils.NotificationManager.Notification;
@@ -12,6 +13,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 import javafx.stage.Window;
 
 import java.net.URL;
@@ -41,7 +43,45 @@ public class NotificationController implements Initializable {
     @FXML
     private Button clearAllButton;
     
+    @FXML
+    private Label titleLabel;
+    
+    @FXML
+    private TextArea contentArea;
+    
+    @FXML
+    private Label reminderTimeLabel;
+    
     private ObservableList<Notification> notificationList = FXCollections.observableArrayList();
+    
+    // Not defterinden gelen bilgileri göstermek için kullanılır
+    public void setNote(NotebookDTO note) {
+        if (note != null) {
+            if (titleLabel != null) {
+                titleLabel.setText(note.getTitle());
+            }
+            
+            if (contentArea != null) {
+                contentArea.setText(note.getContent());
+            }
+            
+            if (reminderTimeLabel != null && note.getReminderDateTime() != null) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                reminderTimeLabel.setText(note.getReminderDateTime().format(formatter));
+            }
+            
+            // Not bildirimi olarak ekle
+            Stage owner = (Stage) clearAllButton.getScene().getWindow();
+            NotificationManager.showInfo(owner, "Not Hatırlatıcı: " + note.getTitle());
+        }
+    }
+    
+    // Pencereyi kapatmak için
+    @FXML
+    private void closeNotification() {
+        Stage stage = (Stage) clearAllButton.getScene().getWindow();
+        stage.close();
+    }
     
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {

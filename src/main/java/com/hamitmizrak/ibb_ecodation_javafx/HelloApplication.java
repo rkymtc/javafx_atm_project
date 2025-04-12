@@ -56,7 +56,7 @@ public class HelloApplication extends Application {
         Connection connection = SingletonPropertiesDBConnection.getInstance().getConnection();
 
         // Tablo oluşturma
-        // Tablo oluşturma (usertable + kdv_table)
+        // Tablo oluşturma (usertable + kdv_table + notebook)
         try (Statement stmt = connection.createStatement()) {
             // Kullanıcı tablosu
             String createUserTableSQL = """
@@ -85,6 +85,23 @@ public class HelloApplication extends Application {
         );
     """;
             stmt.execute(createKdvTableSQL);
+            
+            // Notebook tablosu
+            String createNotebookTableSQL = """
+        CREATE TABLE IF NOT EXISTS notebook (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            content TEXT,
+            created_date TIMESTAMP,
+            updated_date TIMESTAMP,
+            category VARCHAR(100),
+            pinned BOOLEAN DEFAULT FALSE,
+            reminder_date_time TIMESTAMP,
+            user_id INT,
+            FOREIGN KEY (user_id) REFERENCES usertable(id)
+        );
+    """;
+            stmt.execute(createNotebookTableSQL);
         }
 
 
